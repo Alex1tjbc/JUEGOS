@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Neon Striker: Final Fix</title>
+    <title>Neon Striker: Power-Ups</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
     <style>
         :root { 
@@ -12,13 +12,13 @@
             --neon-rojo: #ff0055;
             --neon-verde: #00ff66;
             --neon-amarillo: #ffdd00;
+            --neon-morado: #bc13fe;
         }
         body { 
             margin: 0; padding: 0; overflow: hidden; 
             background: #050505; 
             font-family: 'Orbitron', sans-serif;
-            touch-action: none;
-            user-select: none;
+            touch-action: none; user-select: none;
         }
         
         #ui-bar {
@@ -47,50 +47,59 @@
             box-shadow: 0 0 30px var(--neon-azul), inset 0 0 80px rgba(0,0,0,0.8);
             border-radius: 15px; position: relative;
             transform-style: preserve-3d; overflow: hidden;
+            transition: box-shadow 0.3s, border-color 0.3s;
         }
         
         #tablero::after {
             content: ''; position: absolute; top:-50%; left:-50%; width:200%; height:200%;
             background-image: 
-                linear-gradient(rgba(0, 243, 255, 0.15) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 243, 255, 0.15) 1px, transparent 1px);
+                linear-gradient(rgba(0, 243, 255, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 243, 255, 0.1) 1px, transparent 1px);
             background-size: 50px 50px; z-index: 0; pointer-events: none;
             transform: perspective(500px) rotateX(60deg);
             animation: moverSuelo 1s linear infinite;
         }
         @keyframes moverSuelo { from { background-position: 0 0; } to { background-position: 0 50px; } }
 
-        .temblor { animation: shakeScreen 0.5s cubic-bezier(.36,.07,.19,.97) both; }
-        @keyframes shakeScreen {
-            10%, 90% { transform: translate3d(-4px, 0, 0); }
-            20%, 80% { transform: translate3d(6px, 0, 0); }
-            30%, 50%, 70% { transform: translate3d(-8px, 0, 0); }
-            40%, 60% { transform: translate3d(8px, 0, 0); }
-        }
-
-        .elemento {
-            position: absolute; transform: translate(-50%, -50%);
-            z-index: 10; font-size: 38px;
-            filter: drop-shadow(0 0 5px rgba(255,255,255,0.4));
-            transition: filter 0.2s; /* Suavizar cambios visuales */
-        }
-        
+        /* --- ESTILOS DEL BALÓN Y ESCUDO --- */
         #pelota {
             width: 40px; height: 40px; position: absolute;
             background: radial-gradient(circle at 30% 30%, #fff 0%, #ddd 20%, #111 100%);
             border-radius: 50%; z-index: 20;
             box-shadow: 0 0 15px var(--neon-azul);
             transform: translate(-50%, -50%);
+            transition: box-shadow 0.3s, border 0.3s;
+        }
+        
+        /* ESTADO ESCUDO ACTIVO */
+        .con-escudo {
+            box-shadow: 0 0 20px 5px var(--neon-azul), inset 0 0 10px var(--neon-azul) !important;
+            border: 3px solid #fff;
+            background: radial-gradient(circle at 30% 30%, #aaffff 0%, #0088ff 100%) !important;
+        }
+        .con-escudo::after {
+            content: ''; position: absolute; top: -10px; left: -10px; right: -10px; bottom: -10px;
+            border: 2px dashed #fff; border-radius: 50%;
+            animation: rotarEscudo 2s linear infinite;
+        }
+        @keyframes rotarEscudo { 100% { transform: rotate(360deg); } }
+
+        /* ITEMS ESPECIALES */
+        .elemento {
+            position: absolute; transform: translate(-50%, -50%);
+            z-index: 10; font-size: 38px;
+            filter: drop-shadow(0 0 5px rgba(255,255,255,0.4));
+            transition: all 0.3s;
         }
 
-        .rastro {
-            position: absolute; width: 40px; height: 40px;
-            border-radius: 50%; background: var(--neon-azul);
-            transform: translate(-50%, -50%) scale(0.8);
-            opacity: 0.4; pointer-events: none; z-index: 15;
-            animation: desvanecer 0.3s linear forwards;
+        .vida-temporal {
+            animation: latido 1s infinite;
         }
-        @keyframes desvanecer { to { transform: translate(-50%, -50%) scale(0); opacity: 0; } }
+        @keyframes latido { 0%, 100% { transform: translate(-50%, -50%) scale(1); } 50% { transform: translate(-50%, -50%) scale(1.2); } }
+
+        .roja-caos {
+            filter: drop-shadow(0 0 15px red) hue-rotate(30deg) !important;
+        }
 
         .hoyo {
             position: absolute; width: 65px; height: 65px;
@@ -100,6 +109,14 @@
             transform: translate(-50%, -50%); z-index: 5;
         }
         .hoyo::before { content: '☠️'; position: absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size: 22px; opacity: 0.7; }
+
+        /* Notificaciones flotantes */
+        .float-text {
+            position: absolute; font-size: 1.2rem; font-weight: bold; color: white;
+            pointer-events: none; z-index: 50; text-shadow: 0 0 5px black;
+            animation: floatUp 1s forwards;
+        }
+        @keyframes floatUp { to { transform: translateY(-50px); opacity: 0; } }
 
         .particula { position: absolute; width: 8px; height: 8px; border-radius: 50%; pointer-events: none; z-index: 30; }
 
@@ -117,20 +134,15 @@
             cursor: pointer; box-shadow: 0 0 15px var(--neon-verde);
             font-family: 'Orbitron', sans-serif;
         }
-        .btn:active { background: var(--neon-verde); color: black; }
         .hidden { display: none !important; }
 
-        /* ARREGLO VISUAL: La animación ahora no rompe el posicionamiento */
-        .furiosa {
-            filter: drop-shadow(0 0 20px red) !important;
-            animation: vibrarItem 0.2s infinite;
-        }
-        /* Esta animación usa rotación en vez de translate para no romper las coordenadas X/Y */
-        @keyframes vibrarItem {
-            0% { transform: translate(-50%, -50%) rotate(0deg) scale(1.2); }
-            25% { transform: translate(-50%, -50%) rotate(-10deg) scale(1.2); }
-            75% { transform: translate(-50%, -50%) rotate(10deg) scale(1.2); }
-            100% { transform: translate(-50%, -50%) rotate(0deg) scale(1.2); }
+        /* Animación Temblor */
+        .temblor { animation: shakeScreen 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shakeScreen {
+            10%, 90% { transform: translate3d(-4px, 0, 0); }
+            20%, 80% { transform: translate3d(6px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-8px, 0, 0); }
+            40%, 60% { transform: translate3d(8px, 0, 0); }
         }
 
     </style>
@@ -153,21 +165,21 @@
 </div>
 
 <div id="pantalla-inicio" class="overlay">
-    <h1 style="color:var(--neon-azul); font-size: 3.5rem; margin:0; text-shadow: 0 0 20px var(--neon-azul);">NEON<br>STRIKER</h1>
-    <h3 style="color:#fff; letter-spacing: 3px; font-size: 1rem;">ULTIMATE FIXED</h3>
-    <div style="text-align:left; padding:30px; line-height: 2; background: rgba(255,255,255,0.05); border-radius: 15px; margin-top:20px;">
-        🎮 Inclina o usa Flechas<br>
-        ☠️ Evita los Vórtices<br>
-        🟥 ¡Las rojas se enfadan!<br>
-        🏆 Colecciona Copas
+    <h1 style="color:var(--neon-azul); font-size: 3rem; margin:0;">NEON STRIKER</h1>
+    <h3 style="color:#fff;">POWER-UPS EDITION</h3>
+    <div style="text-align:left; padding:20px; line-height: 1.6; background: rgba(255,255,255,0.05); border-radius: 15px; margin-top:10px; font-size: 0.9rem;">
+        🛡️ <strong>Escudo:</strong> Inmortalidad (6s)<br>
+        💣 <strong>Bomba:</strong> ¡Acelera las rojas!<br>
+        🦹 <strong>Ladrón:</strong> Roba puntos<br>
+        💖 <strong>Vida:</strong> Recupérate (dura 6s)
     </div>
-    <button class="btn" onclick="iniciarJuego()">START</button>
+    <button class="btn" onclick="iniciarJuego()">JUGAR</button>
 </div>
 
 <div id="pantalla-fin" class="overlay hidden">
-    <h1 id="titulo-fin" style="color:var(--neon-rojo); font-size: 3rem; text-shadow: 0 0 20px red;">GAME OVER</h1>
-    <p style="font-size:2rem; margin: 10px 0;">SCORE: <span id="score-final" style="color:var(--neon-amarillo)">0</span></p>
-    <button class="btn" onclick="location.reload()">RETRY</button>
+    <h1 style="color:var(--neon-rojo); font-size: 3rem;">GAME OVER</h1>
+    <p style="font-size:2rem;">SCORE: <span id="score-final" style="color:var(--neon-amarillo)">0</span></p>
+    <button class="btn" onclick="location.reload()">REINTENTAR</button>
 </div>
 
 <script>
@@ -175,11 +187,13 @@
 
     let estado = {
         jugando: false, x: 50, y: 50, vx: 0, vy: 0,
-        incliX: 0, incliY: 0, puntos: 0, vidas: 3, tiempo: 60, rotacion: 0
+        incliX: 0, incliY: 0, puntos: 0, vidas: 3, tiempo: 60, rotacion: 0,
+        escudoActivo: false
     };
 
     let items = []; let hoyos = []; 
 
+    // --- AUDIO ---
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     function beep(f, t, d) {
         if(audioCtx.state === 'suspended') audioCtx.resume();
@@ -190,10 +204,11 @@
         o.stop(audioCtx.currentTime + d);
     }
     const sfx = {
-        bien: () => { beep(800, 'sine', 0.1); setTimeout(()=>beep(1200,'sine',0.2), 100); },
-        mal: () => { beep(150, 'sawtooth', 0.2); },
-        furia: () => { beep(100, 'square', 0.1); },
-        muerte: () => { beep(100, 'square', 1.0); }
+        bien: () => beep(1000, 'sine', 0.1),
+        mal: () => beep(150, 'sawtooth', 0.2),
+        escudo: () => { beep(400, 'square', 0.1); setTimeout(()=>beep(600,'square',0.3), 100); },
+        bomba: () => beep(100, 'sawtooth', 0.5),
+        vida: () => { beep(800, 'sine', 0.1); setTimeout(()=>beep(1200,'sine',0.2), 100); }
     };
 
     function iniciarJuego() {
@@ -217,7 +232,7 @@
 
         crearHoyosSeguros();
         requestAnimationFrame(gameLoop);
-        setInterval(spawnItem, 1500);
+        setInterval(spawnItem, 1200);
         setInterval(reloj, 1000);
     }
 
@@ -233,12 +248,21 @@
 
     function spawnItem() {
         if(!estado.jugando) return;
+        
+        // Tabla de Probabilidades
+        // type: ok (puntos), bad (roja), shield (escudo), thief (ladrón), boom (bomba), life (vida)
         const tabla = [
-            {emoji:'😀', val:10, type:'ok', speed:0.3},
-            {emoji:'😀', val:10, type:'ok', speed:0.3},
-            {emoji:'🏆', val:50, type:'ok', speed:0.8},
-            {emoji:'🟥', val:-1, type:'bad', speed:0.6}
+            {emoji:'😀', type:'ok', val:10, speed:0.3},
+            {emoji:'😀', type:'ok', val:10, speed:0.3},
+            {emoji:'🏆', type:'ok', val:50, speed:0.8},
+            {emoji:'🟥', type:'bad', val:-1, speed:0.6},
+            {emoji:'🟥', type:'bad', val:-1, speed:0.6},
+            {emoji:'🛡️', type:'shield', val:0, speed:0.2}, // Escudo
+            {emoji:'🦹', type:'thief', val:-100, speed:0.5}, // Ladrón
+            {emoji:'💣', type:'boom', val:0, speed:0.4},   // Bomba
+            {emoji:'💖', type:'life', val:1, speed:0.9}    // Vida
         ];
+        
         const ele = tabla[Math.floor(Math.random() * tabla.length)];
         let nx, ny;
         do { nx = 10 + Math.random() * 80; ny = 10 + Math.random() * 80; } 
@@ -246,27 +270,66 @@
 
         let div = document.createElement('div'); div.className = 'elemento';
         div.innerText = ele.emoji; div.style.left = nx + '%'; div.style.top = ny + '%';
-        if(ele.emoji === '🟥') div.style.textShadow = "0 0 10px red";
+        if(ele.type === 'bad') div.style.textShadow = "0 0 10px red";
+        if(ele.type === 'life') div.classList.add('vida-temporal');
+        
         document.getElementById('capa-items').appendChild(div);
 
-        items.push({
+        // Crear objeto item
+        let newItem = {
             el: div, x: nx, y: ny, vx: (Math.random()-0.5)*ele.speed, vy: (Math.random()-0.5)*ele.speed,
-            tipo: ele.type, val: ele.val, furioso: false, cooldown: 0
-        });
+            tipo: ele.type, val: ele.val, 
+            creado: Date.now() // Para controlar tiempo de vida
+        };
+        items.push(newItem);
     }
 
-    function crearRastro() {
-        if (Math.random() > 0.3) return;
-        let div = document.createElement('div'); div.className = 'rastro';
-        div.style.left = estado.x + '%'; div.style.top = estado.y + '%';
-        document.getElementById('capa-fx').appendChild(div);
-        setTimeout(() => div.remove(), 300);
+    function mostrarTexto(txt, x, y, color) {
+        let t = document.createElement('div'); t.className = 'float-text';
+        t.innerText = txt; t.style.color = color;
+        t.style.left = x + '%'; t.style.top = y + '%';
+        document.getElementById('capa-fx').appendChild(t);
+        setTimeout(() => t.remove(), 1000);
+    }
+
+    function activarEscudo() {
+        if(estado.escudoActivo) return; // Ya activo
+        estado.escudoActivo = true;
+        document.getElementById('pelota').classList.add('con-escudo');
+        sfx.escudo();
+        mostrarTexto("¡ESCUDO!", 50, 50, "#00f3ff");
+        
+        setTimeout(() => {
+            estado.escudoActivo = false;
+            document.getElementById('pelota').classList.remove('con-escudo');
+        }, 6000);
+    }
+
+    function activarBomba() {
+        document.body.classList.add('temblor');
+        setTimeout(() => document.body.classList.remove('temblor'), 500);
+        crearExplosion(50, 50, '#ffaa00');
+        sfx.bomba();
+        mostrarTexto("¡CAOS!", 50, 50, "orange");
+
+        // Acelerar todas las rojas por 6 segundos
+        items.forEach(it => {
+            if(it.tipo === 'bad') {
+                it.vx *= 3; it.vy *= 3; // Acelerar
+                it.el.classList.add('roja-caos'); // Efecto visual
+                setTimeout(() => {
+                    // Intentar revertir (si sigue viva)
+                    it.vx /= 3; it.vy /= 3;
+                    if(it.el) it.el.classList.remove('roja-caos');
+                }, 6000);
+            }
+        });
     }
 
     function gameLoop() {
         if(!estado.jugando) return;
 
-        // Física Jugador
+        // Física
         estado.vx += estado.incliX * 0.005; estado.vy += estado.incliY * 0.005;
         estado.vx *= config.friccion; estado.vy *= config.friccion;
         estado.x += estado.vx; estado.y += estado.vy;
@@ -274,7 +337,6 @@
         if(estado.x <= 2 || estado.x >= 98) { estado.vx *= -0.6; estado.x = estado.x < 2 ? 2 : 98; }
         if(estado.y <= 2 || estado.y >= 98) { estado.vy *= -0.6; estado.y = estado.y < 2 ? 2 : 98; }
 
-        // Render Pelota
         estado.rotacion += Math.sqrt(estado.vx*estado.vx + estado.vy*estado.vy) * 10;
         const bola = document.getElementById('pelota');
         bola.style.left = estado.x + '%'; bola.style.top = estado.y + '%';
@@ -282,66 +344,94 @@
         
         document.getElementById('tablero').style.transform = `rotateX(${-estado.incliY * 0.5}deg) rotateY(${estado.incliX * 0.5}deg)`;
 
-        if (Math.abs(estado.vx) + Math.abs(estado.vy) > 0.1) crearRastro();
-
         // Colisión Hoyos
         for(let h of hoyos) {
-            if(Math.sqrt(Math.pow(estado.x - h.x, 2) + Math.pow(estado.y - h.y, 2)) < config.radioHoyo) { 
-                gameOver("¡VACÍO CÓSMICO!"); return; 
+            let dist = Math.sqrt(Math.pow(estado.x - h.x, 2) + Math.pow(estado.y - h.y, 2));
+            // SI TIENE ESCUDO, IGNORA EL HOYO
+            if(dist < config.radioHoyo && !estado.escudoActivo) { 
+                gameOver("¡CAÍSTE AL VACÍO!"); return; 
             }
         }
 
         // Lógica Items
+        let tiempoActual = Date.now();
         for (let i = items.length - 1; i >= 0; i--) {
             let it = items[i];
             
-            // Movimiento Item
+            // CADUCIDAD DE LA VIDA (6 SEGUNDOS)
+            if(it.tipo === 'life' && (tiempoActual - it.creado > 6000)) {
+                it.el.remove(); items.splice(i, 1);
+                continue;
+            }
+
+            // Movimiento
             it.x += it.vx; it.y += it.vy;
             if(it.x < 5 || it.x > 95) it.vx *= -1;
             if(it.y < 5 || it.y > 95) it.vy *= -1;
             it.el.style.left = it.x + '%'; it.el.style.top = it.y + '%';
-            
-            if(it.cooldown > 0) it.cooldown--;
 
-            // Colisión
             let dist = Math.sqrt(Math.pow(estado.x - it.x, 2) + Math.pow(estado.y - it.y, 2));
 
-            if(dist < config.radioColision && it.cooldown <= 0) {
+            if(dist < config.radioColision) {
+                // COLISIÓN DETECTADA
+                let eliminar = true;
+
                 if(it.tipo === 'ok') {
                     estado.puntos += it.val;
                     crearExplosion(it.x, it.y, '#ffdd00');
+                    mostrarTexto("+"+it.val, it.x, it.y, "#ffdd00");
                     sfx.bien();
-                    it.el.remove(); items.splice(i, 1);
-                } else {
-                    // AQUÍ ESTABA EL ERROR: AHORA MANEJAMOS AMBOS CASOS
-                    
-                    // Efecto visual de golpe
-                    document.body.classList.add('temblor');
-                    setTimeout(() => document.body.classList.remove('temblor'), 500);
-                    crearExplosion(it.x, it.y, '#ff0000');
+                
+                } else if(it.tipo === 'shield') {
+                    activarEscudo();
+                    crearExplosion(it.x, it.y, '#00f3ff');
+                
+                } else if(it.tipo === 'boom') {
+                    activarBomba();
+                
+                } else if(it.tipo === 'thief') {
+                    estado.puntos += it.val; // Es negativo (-100)
+                    mostrarTexto("-100", it.x, it.y, "#aa0000");
+                    crearExplosion(it.x, it.y, '#555');
+                    sfx.mal();
 
-                    if(!it.furioso) { 
-                        // PRIMER CONTACTO
+                } else if(it.tipo === 'life') {
+                    if(estado.vidas < 3) {
+                        estado.vidas++;
+                        mostrarTexto("+1 ❤️", it.x, it.y, "#ff0055");
+                        crearExplosion(it.x, it.y, '#ff0055');
+                        sfx.vida();
+                    } else {
+                        mostrarTexto("FULL", it.x, it.y, "#fff");
+                    }
+
+                } else if(it.tipo === 'bad') {
+                    // SI TIENE ESCUDO, NO PASA NADA
+                    if(estado.escudoActivo) {
+                        mostrarTexto("BLOCKED", it.x, it.y, "#fff");
+                        // Rebote simple
+                        estado.vx *= -1; estado.vy *= -1;
+                        eliminar = false; // No eliminar la tarjeta roja
+                    } else {
+                        // Daño normal
                         estado.vidas--;
+                        crearExplosion(it.x, it.y, '#ff0000');
+                        document.body.classList.add('temblor');
+                        setTimeout(() => document.body.classList.remove('temblor'), 500);
                         sfx.mal();
+                        
                         if(estado.vidas <= 0) { gameOver("ELIMINADO"); return; }
                         
-                        it.furioso = true;
-                        it.vx *= 2.5; it.vy *= 2.5; // Se vuelve loca
-                        it.el.classList.add('furiosa');
-                        
-                        // Rebote fuerte
-                        estado.vx = -estado.vx * 1.5; estado.vy = -estado.vy * 1.5;
-                        it.vx *= -1; it.vy *= -1;
-                        it.cooldown = 30; // Invulnerable medio segundo
-                    } else {
-                        // CONTACTO CUANDO YA ES FURIOSA (Solución al "se queda asi")
-                        sfx.furia(); // Sonido diferente
-                        // Rebote físico obligatorio
+                        // Empuje
                         estado.vx = -estado.vx * 2; estado.vy = -estado.vy * 2;
                         it.vx *= -1; it.vy *= -1;
-                        it.cooldown = 20; // Breve pausa para no spamear colisiones
+                        it.x = (it.x + 50) % 100; // Alejarla un poco
+                        eliminar = false; // La roja se queda
                     }
+                }
+
+                if(eliminar) {
+                    it.el.remove(); items.splice(i, 1);
                 }
                 actualizarHUD();
             }
@@ -370,13 +460,12 @@
     function reloj() {
         if(!estado.jugando) return;
         estado.tiempo--; document.getElementById('tiempo-val').innerText = estado.tiempo;
-        if(estado.tiempo <= 0) gameOver("TIME OUT");
+        if(estado.tiempo <= 0) gameOver("TIEMPO AGOTADO");
     }
 
     function gameOver(razon) {
-        estado.jugando = false; sfx.muerte();
+        estado.jugando = false; 
         document.getElementById('pantalla-fin').classList.remove('hidden');
-        document.getElementById('titulo-fin').innerText = razon;
         document.getElementById('score-final').innerText = estado.puntos;
     }
 </script>
