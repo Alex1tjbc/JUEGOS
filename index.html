@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Neon Striker: Ultimate Arcade</title>
+    <title>Neon Striker: Final Fix</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
     <style>
         :root { 
@@ -16,110 +16,82 @@
         body { 
             margin: 0; padding: 0; overflow: hidden; 
             background: #050505; 
-            font-family: 'Orbitron', sans-serif; /* MEJORA: Fuente Sci-Fi */
+            font-family: 'Orbitron', sans-serif;
             touch-action: none;
             user-select: none;
         }
         
-        /* MEJORA: UI GLASSMORPHISM (Cristal) */
         #ui-bar {
             position: fixed; top: 0; left: 0; width: 100%; height: 80px;
-            background: rgba(255, 255, 255, 0.05); /* Cristal */
-            backdrop-filter: blur(10px); /* Desenfoque */
-            -webkit-backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             display: flex; justify-content: space-around; align-items: center;
-            z-index: 100;
-            color: white; font-weight: bold;
+            z-index: 100; color: white; font-weight: bold;
             box-shadow: 0 5px 20px rgba(0,0,0,0.5);
         }
         .stat-box { text-align: center; text-shadow: 0 0 10px rgba(255,255,255,0.3); }
         .stat-val { font-size: 1.5rem; margin-top: 5px; }
         #vidas-val { letter-spacing: 2px; }
 
-        /* EL JUEGO */
         #game-area {
             position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
             display: flex; align-items: center; justify-content: center;
-            perspective: 1000px;
-            overflow: hidden;
+            perspective: 1000px; overflow: hidden;
         }
 
         #tablero {
-            width: 90vw; height: 130vw; 
-            max-height: 85vh; max-width: 60vh; 
+            width: 90vw; height: 130vw; max-height: 85vh; max-width: 60vh; 
             background: radial-gradient(circle at center, #1a1a2e 0%, #000 90%);
             border: 4px solid var(--neon-azul);
             box-shadow: 0 0 30px var(--neon-azul), inset 0 0 80px rgba(0,0,0,0.8);
-            border-radius: 15px;
-            position: relative;
-            transform-style: preserve-3d;
-            overflow: hidden;
+            border-radius: 15px; position: relative;
+            transform-style: preserve-3d; overflow: hidden;
         }
         
-        /* MEJORA: GRID EN MOVIMIENTO (SYNTHWAVE) */
         #tablero::after {
             content: ''; position: absolute; top:-50%; left:-50%; width:200%; height:200%;
             background-image: 
                 linear-gradient(rgba(0, 243, 255, 0.15) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(0, 243, 255, 0.15) 1px, transparent 1px);
-            background-size: 50px 50px;
-            z-index: 0;
-            pointer-events: none;
+            background-size: 50px 50px; z-index: 0; pointer-events: none;
             transform: perspective(500px) rotateX(60deg);
             animation: moverSuelo 1s linear infinite;
         }
-        @keyframes moverSuelo {
-            from { background-position: 0 0; }
-            to { background-position: 0 50px; }
-        }
+        @keyframes moverSuelo { from { background-position: 0 0; } to { background-position: 0 50px; } }
 
-        /* MEJORA: SCREEN SHAKE (TEMBLOR) */
-        .temblor {
-            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
-        }
-        @keyframes shake {
+        .temblor { animation: shakeScreen 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shakeScreen {
             10%, 90% { transform: translate3d(-4px, 0, 0); }
             20%, 80% { transform: translate3d(6px, 0, 0); }
             30%, 50%, 70% { transform: translate3d(-8px, 0, 0); }
             40%, 60% { transform: translate3d(8px, 0, 0); }
         }
 
-        /* ELEMENTOS DEL JUEGO */
         .elemento {
-            position: absolute; 
-            transform: translate(-50%, -50%);
-            z-index: 10;
-            font-size: 38px;
+            position: absolute; transform: translate(-50%, -50%);
+            z-index: 10; font-size: 38px;
             filter: drop-shadow(0 0 5px rgba(255,255,255,0.4));
+            transition: filter 0.2s; /* Suavizar cambios visuales */
         }
         
         #pelota {
-            width: 40px; height: 40px;
-            position: absolute;
+            width: 40px; height: 40px; position: absolute;
             background: radial-gradient(circle at 30% 30%, #fff 0%, #ddd 20%, #111 100%);
-            border-radius: 50%;
-            z-index: 20;
+            border-radius: 50%; z-index: 20;
             box-shadow: 0 0 15px var(--neon-azul);
             transform: translate(-50%, -50%);
-            display: flex; align-items: center; justify-content: center;
         }
-        #pelota::after { content: ''; } /* Limpio, sin emoji */
 
-        /* MEJORA: ESTELA DE LUZ (TRAIL) */
         .rastro {
             position: absolute; width: 40px; height: 40px;
-            border-radius: 50%;
-            background: var(--neon-azul);
+            border-radius: 50%; background: var(--neon-azul);
             transform: translate(-50%, -50%) scale(0.8);
-            opacity: 0.4;
-            pointer-events: none; z-index: 15;
+            opacity: 0.4; pointer-events: none; z-index: 15;
             animation: desvanecer 0.3s linear forwards;
-            box-shadow: 0 0 10px var(--neon-azul);
         }
         @keyframes desvanecer { to { transform: translate(-50%, -50%) scale(0); opacity: 0; } }
 
-        /* HOYOS */
         .hoyo {
             position: absolute; width: 65px; height: 65px;
             background: black; border-radius: 50%;
@@ -129,18 +101,14 @@
         }
         .hoyo::before { content: '☠️'; position: absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size: 22px; opacity: 0.7; }
 
-        /* PARTICULAS */
         .particula { position: absolute; width: 8px; height: 8px; border-radius: 50%; pointer-events: none; z-index: 30; }
 
-        /* PANTALLAS (Glassmorphism) */
         .overlay {
             position: fixed; top:0; left:0; width:100%; height:100%;
-            background: rgba(0,0,0,0.85);
-            backdrop-filter: blur(8px);
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
             color: white; z-index: 200;
             display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            text-align: center;
+            align-items: center; justify-content: center; text-align: center;
         }
         .btn {
             background: transparent; color: var(--neon-verde);
@@ -148,15 +116,21 @@
             border: 3px solid var(--neon-verde); border-radius: 50px; margin-top: 30px;
             cursor: pointer; box-shadow: 0 0 15px var(--neon-verde);
             font-family: 'Orbitron', sans-serif;
-            transition: 0.2s;
-            text-shadow: 0 0 10px var(--neon-verde);
         }
-        .btn:active { transform: scale(0.95); background: var(--neon-verde); color: black; }
+        .btn:active { background: var(--neon-verde); color: black; }
         .hidden { display: none !important; }
 
+        /* ARREGLO VISUAL: La animación ahora no rompe el posicionamiento */
         .furiosa {
-            filter: drop-shadow(0 0 15px red);
-            animation: shake 0.2s infinite;
+            filter: drop-shadow(0 0 20px red) !important;
+            animation: vibrarItem 0.2s infinite;
+        }
+        /* Esta animación usa rotación en vez de translate para no romper las coordenadas X/Y */
+        @keyframes vibrarItem {
+            0% { transform: translate(-50%, -50%) rotate(0deg) scale(1.2); }
+            25% { transform: translate(-50%, -50%) rotate(-10deg) scale(1.2); }
+            75% { transform: translate(-50%, -50%) rotate(10deg) scale(1.2); }
+            100% { transform: translate(-50%, -50%) rotate(0deg) scale(1.2); }
         }
 
     </style>
@@ -180,11 +154,11 @@
 
 <div id="pantalla-inicio" class="overlay">
     <h1 style="color:var(--neon-azul); font-size: 3.5rem; margin:0; text-shadow: 0 0 20px var(--neon-azul);">NEON<br>STRIKER</h1>
-    <h3 style="color:#fff; letter-spacing: 3px; font-size: 1rem;">ULTIMATE ARCADE</h3>
+    <h3 style="color:#fff; letter-spacing: 3px; font-size: 1rem;">ULTIMATE FIXED</h3>
     <div style="text-align:left; padding:30px; line-height: 2; background: rgba(255,255,255,0.05); border-radius: 15px; margin-top:20px;">
         🎮 Inclina o usa Flechas<br>
         ☠️ Evita los Vórtices<br>
-        🟥 ¡Cuidado con la Furia!<br>
+        🟥 ¡Las rojas se enfadan!<br>
         🏆 Colecciona Copas
     </div>
     <button class="btn" onclick="iniciarJuego()">START</button>
@@ -197,106 +171,63 @@
 </div>
 
 <script>
-    // --- CONFIGURACIÓN ---
-    const config = {
-        velocidad: 0.15,
-        friccion: 0.94,
-        radioPelota: 3, 
-        radioColision: 5, 
-        radioHoyo: 4      
-    };
+    const config = { velocidad: 0.15, friccion: 0.94, radioColision: 6, radioHoyo: 4 };
 
-    // --- ESTADO DEL JUEGO ---
     let estado = {
-        jugando: false,
-        x: 50, y: 50,
-        vx: 0, vy: 0,
-        incliX: 0, incliY: 0,
-        puntos: 0,
-        vidas: 3,
-        tiempo: 60,
-        rotacion: 0
+        jugando: false, x: 50, y: 50, vx: 0, vy: 0,
+        incliX: 0, incliY: 0, puntos: 0, vidas: 3, tiempo: 60, rotacion: 0
     };
 
-    let items = []; 
-    let hoyos = []; 
+    let items = []; let hoyos = []; 
 
-    // --- AUDIO SINTETIZADO ---
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    function beep(frecuencia, tipo, duracion) {
+    function beep(f, t, d) {
         if(audioCtx.state === 'suspended') audioCtx.resume();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = tipo;
-        osc.frequency.value = frecuencia;
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start();
-        gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duracion);
-        osc.stop(audioCtx.currentTime + duracion);
+        const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
+        o.type = t; o.frequency.value = f;
+        o.connect(g); g.connect(audioCtx.destination);
+        o.start(); g.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + d);
+        o.stop(audioCtx.currentTime + d);
     }
     const sfx = {
         bien: () => { beep(800, 'sine', 0.1); setTimeout(()=>beep(1200,'sine',0.2), 100); },
-        mal: () => { beep(150, 'sawtooth', 0.3); },
-        muerte: () => { beep(100, 'square', 1.0); },
-        pop: () => { beep(600, 'triangle', 0.05); }
+        mal: () => { beep(150, 'sawtooth', 0.2); },
+        furia: () => { beep(100, 'square', 0.1); },
+        muerte: () => { beep(100, 'square', 1.0); }
     };
 
-    // --- INICIO ---
     function iniciarJuego() {
         if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-            DeviceOrientationEvent.requestPermission()
-                .then(res => { if (res === 'granted') arrancarMotor(); })
-                .catch(console.error);
-        } else {
-            arrancarMotor();
-        }
+            DeviceOrientationEvent.requestPermission().then(res => { if (res === 'granted') arrancar(); }).catch(arrancar);
+        } else { arrancar(); }
     }
 
-    function arrancarMotor() {
+    function arrancar() {
         document.getElementById('pantalla-inicio').classList.add('hidden');
         estado.jugando = true;
-        
-        window.addEventListener('deviceorientation', manejarGiroscopio);
-        window.addEventListener('keydown', manejarTeclado); 
+        window.addEventListener('deviceorientation', e => {
+            estado.incliX = Math.min(30, Math.max(-30, e.gamma || 0)); 
+            estado.incliY = Math.min(30, Math.max(-30, e.beta || 0));
+        });
+        window.addEventListener('keydown', e => {
+            if(e.key === 'ArrowRight') estado.incliX = 20; if(e.key === 'ArrowLeft') estado.incliX = -20;
+            if(e.key === 'ArrowUp') estado.incliY = -20; if(e.key === 'ArrowDown') estado.incliY = 20;
+            setTimeout(() => { if(e.key.includes('Arrow')) { estado.incliX=0; estado.incliY=0; } }, 300);
+        });
 
         crearHoyosSeguros();
-        actualizarHUD();
-
         requestAnimationFrame(gameLoop);
         setInterval(spawnItem, 1500);
         setInterval(reloj, 1000);
     }
 
-    // --- LOGICA DE CONTROL ---
-    function manejarGiroscopio(e) {
-        estado.incliX = Math.min(30, Math.max(-30, e.gamma || 0)); 
-        estado.incliY = Math.min(30, Math.max(-30, e.beta || 0));
-    }
-    
-    function manejarTeclado(e) {
-        if(e.key === 'ArrowRight') estado.incliX = 20;
-        if(e.key === 'ArrowLeft') estado.incliX = -20;
-        if(e.key === 'ArrowUp') estado.incliY = -20;
-        if(e.key === 'ArrowDown') estado.incliY = 20;
-        setTimeout(() => { 
-            if(e.key.includes('Arrow')) { estado.incliX=0; estado.incliY=0; }
-        }, 300);
-    }
-
-    // --- GENERACIÓN SEGURA ---
     function crearHoyosSeguros() {
-        const divHoyos = document.getElementById('capa-hoyos');
-        divHoyos.innerHTML = '';
-        hoyos = [
-            {x: 20, y: 20}, {x: 80, y: 20},
-            {x: 20, y: 80}, {x: 80, y: 80}
-        ];
+        const div = document.getElementById('capa-hoyos'); div.innerHTML = '';
+        hoyos = [{x: 20, y: 20}, {x: 80, y: 20}, {x: 20, y: 80}, {x: 80, y: 80}];
         hoyos.forEach(h => {
-            let el = document.createElement('div');
-            el.className = 'hoyo';
+            let el = document.createElement('div'); el.className = 'hoyo';
             el.style.left = h.x + '%'; el.style.top = h.y + '%';
-            divHoyos.appendChild(el);
+            div.appendChild(el);
         });
     }
 
@@ -308,53 +239,38 @@
             {emoji:'🏆', val:50, type:'ok', speed:0.8},
             {emoji:'🟥', val:-1, type:'bad', speed:0.6}
         ];
-        const elegido = tabla[Math.floor(Math.random() * tabla.length)];
-
+        const ele = tabla[Math.floor(Math.random() * tabla.length)];
         let nx, ny;
-        do {
-            nx = 10 + Math.random() * 80;
-            ny = 10 + Math.random() * 80;
-        } while (Math.abs(nx - 50) < 15 && Math.abs(ny - 50) < 15);
+        do { nx = 10 + Math.random() * 80; ny = 10 + Math.random() * 80; } 
+        while (Math.abs(nx - 50) < 15 && Math.abs(ny - 50) < 15);
 
-        let div = document.createElement('div');
-        div.className = 'elemento';
-        div.innerText = elegido.emoji;
-        div.style.left = nx + '%'; div.style.top = ny + '%';
-        if(elegido.emoji === '🟥') div.style.textShadow = "0 0 10px red";
-        
+        let div = document.createElement('div'); div.className = 'elemento';
+        div.innerText = ele.emoji; div.style.left = nx + '%'; div.style.top = ny + '%';
+        if(ele.emoji === '🟥') div.style.textShadow = "0 0 10px red";
         document.getElementById('capa-items').appendChild(div);
 
         items.push({
-            el: div, x: nx, y: ny,
-            vx: (Math.random()-0.5)*elegido.speed,
-            vy: (Math.random()-0.5)*elegido.speed,
-            tipo: elegido.type, val: elegido.val, furioso: false
+            el: div, x: nx, y: ny, vx: (Math.random()-0.5)*ele.speed, vy: (Math.random()-0.5)*ele.speed,
+            tipo: ele.type, val: ele.val, furioso: false, cooldown: 0
         });
     }
 
-    // --- MEJORA: FUNCIÓN CREAR RASTRO ---
     function crearRastro() {
-        if (Math.random() > 0.3) return; // No saturar el DOM
-        let div = document.createElement('div');
-        div.className = 'rastro';
-        div.style.left = estado.x + '%';
-        div.style.top = estado.y + '%';
+        if (Math.random() > 0.3) return;
+        let div = document.createElement('div'); div.className = 'rastro';
+        div.style.left = estado.x + '%'; div.style.top = estado.y + '%';
         document.getElementById('capa-fx').appendChild(div);
         setTimeout(() => div.remove(), 300);
     }
 
-    // --- LOOP PRINCIPAL ---
     function gameLoop() {
         if(!estado.jugando) return;
 
-        // Física
-        estado.vx += estado.incliX * 0.005; 
-        estado.vy += estado.incliY * 0.005;
-        estado.vx *= config.friccion;
-        estado.vy *= config.friccion;
+        // Física Jugador
+        estado.vx += estado.incliX * 0.005; estado.vy += estado.incliY * 0.005;
+        estado.vx *= config.friccion; estado.vy *= config.friccion;
         estado.x += estado.vx; estado.y += estado.vy;
 
-        // Paredes
         if(estado.x <= 2 || estado.x >= 98) { estado.vx *= -0.6; estado.x = estado.x < 2 ? 2 : 98; }
         if(estado.y <= 2 || estado.y >= 98) { estado.vy *= -0.6; estado.y = estado.y < 2 ? 2 : 98; }
 
@@ -364,52 +280,67 @@
         bola.style.left = estado.x + '%'; bola.style.top = estado.y + '%';
         bola.style.transform = `translate(-50%, -50%) rotate(${estado.rotacion}deg)`;
         
-        // Render Tablero
         document.getElementById('tablero').style.transform = `rotateX(${-estado.incliY * 0.5}deg) rotateY(${estado.incliX * 0.5}deg)`;
 
-        // Efecto Rastro
         if (Math.abs(estado.vx) + Math.abs(estado.vy) > 0.1) crearRastro();
 
         // Colisión Hoyos
         for(let h of hoyos) {
-            let dist = Math.sqrt(Math.pow(estado.x - h.x, 2) + Math.pow(estado.y - h.y, 2));
-            if(dist < config.radioHoyo) { gameOver("¡VACÍO CÓSMICO!"); return; }
+            if(Math.sqrt(Math.pow(estado.x - h.x, 2) + Math.pow(estado.y - h.y, 2)) < config.radioHoyo) { 
+                gameOver("¡VACÍO CÓSMICO!"); return; 
+            }
         }
 
         // Lógica Items
         for (let i = items.length - 1; i >= 0; i--) {
             let it = items[i];
+            
+            // Movimiento Item
             it.x += it.vx; it.y += it.vy;
             if(it.x < 5 || it.x > 95) it.vx *= -1;
             if(it.y < 5 || it.y > 95) it.vy *= -1;
-            
             it.el.style.left = it.x + '%'; it.el.style.top = it.y + '%';
+            
+            if(it.cooldown > 0) it.cooldown--;
 
+            // Colisión
             let dist = Math.sqrt(Math.pow(estado.x - it.x, 2) + Math.pow(estado.y - it.y, 2));
 
-            if(dist < config.radioColision) {
+            if(dist < config.radioColision && it.cooldown <= 0) {
                 if(it.tipo === 'ok') {
                     estado.puntos += it.val;
                     crearExplosion(it.x, it.y, '#ffdd00');
                     sfx.bien();
                     it.el.remove(); items.splice(i, 1);
                 } else {
+                    // AQUÍ ESTABA EL ERROR: AHORA MANEJAMOS AMBOS CASOS
+                    
+                    // Efecto visual de golpe
+                    document.body.classList.add('temblor');
+                    setTimeout(() => document.body.classList.remove('temblor'), 500);
+                    crearExplosion(it.x, it.y, '#ff0000');
+
                     if(!it.furioso) { 
+                        // PRIMER CONTACTO
                         estado.vidas--;
                         sfx.mal();
-                        crearExplosion(it.x, it.y, '#ff0000');
-                        
-                        // MEJORA: SCREEN SHAKE
-                        document.body.classList.add('temblor');
-                        setTimeout(() => document.body.classList.remove('temblor'), 500);
-
                         if(estado.vidas <= 0) { gameOver("ELIMINADO"); return; }
-
+                        
                         it.furioso = true;
-                        it.vx *= 3; it.vy *= 3;
+                        it.vx *= 2.5; it.vy *= 2.5; // Se vuelve loca
                         it.el.classList.add('furiosa');
+                        
+                        // Rebote fuerte
+                        estado.vx = -estado.vx * 1.5; estado.vy = -estado.vy * 1.5;
+                        it.vx *= -1; it.vy *= -1;
+                        it.cooldown = 30; // Invulnerable medio segundo
+                    } else {
+                        // CONTACTO CUANDO YA ES FURIOSA (Solución al "se queda asi")
+                        sfx.furia(); // Sonido diferente
+                        // Rebote físico obligatorio
                         estado.vx = -estado.vx * 2; estado.vy = -estado.vy * 2;
-                        it.x = (it.x + 50) % 100; it.y = (it.y + 50) % 100;
+                        it.vx *= -1; it.vy *= -1;
+                        it.cooldown = 20; // Breve pausa para no spamear colisiones
                     }
                 }
                 actualizarHUD();
@@ -418,47 +349,32 @@
         requestAnimationFrame(gameLoop);
     }
 
-    // --- UTILS ---
     function crearExplosion(x, y, color) {
         const capa = document.getElementById('capa-fx');
-        for(let k=0; k<10; k++) {
-            let p = document.createElement('div');
-            p.className = 'particula';
-            p.style.backgroundColor = color;
-            p.style.left = x + '%'; p.style.top = y + '%';
-            
-            let angle = Math.random() * Math.PI * 2;
-            let speed = 20 + Math.random() * 30;
-            let tx = Math.cos(angle) * speed;
-            let ty = Math.sin(angle) * speed;
-            
-            p.animate([
-                { transform: 'translate(0,0) scale(1)', opacity: 1 },
-                { transform: `translate(${tx}px, ${ty}px) scale(0)`, opacity: 0 }
-            ], { duration: 500 });
-            
-            capa.appendChild(p);
-            setTimeout(() => p.remove(), 500);
+        for(let k=0; k<8; k++) {
+            let p = document.createElement('div'); p.className = 'particula';
+            p.style.backgroundColor = color; p.style.left = x + '%'; p.style.top = y + '%';
+            let angle = Math.random() * 6.28; let speed = 20 + Math.random() * 30;
+            let tx = Math.cos(angle) * speed; let ty = Math.sin(angle) * speed;
+            p.animate([{ transform: 'translate(0,0) scale(1)', opacity: 1 }, { transform: `translate(${tx}px, ${ty}px) scale(0)`, opacity: 0 }], { duration: 500 });
+            capa.appendChild(p); setTimeout(() => p.remove(), 500);
         }
     }
 
     function actualizarHUD() {
         document.getElementById('puntos-val').innerText = estado.puntos;
-        let corazones = "";
-        for(let i=0; i<estado.vidas; i++) corazones += "❤️";
-        document.getElementById('vidas-val').innerText = corazones;
+        let c = ""; for(let i=0; i<estado.vidas; i++) c += "❤️";
+        document.getElementById('vidas-val').innerText = c;
     }
 
     function reloj() {
         if(!estado.jugando) return;
-        estado.tiempo--;
-        document.getElementById('tiempo-val').innerText = estado.tiempo;
+        estado.tiempo--; document.getElementById('tiempo-val').innerText = estado.tiempo;
         if(estado.tiempo <= 0) gameOver("TIME OUT");
     }
 
     function gameOver(razon) {
-        estado.jugando = false;
-        sfx.muerte();
+        estado.jugando = false; sfx.muerte();
         document.getElementById('pantalla-fin').classList.remove('hidden');
         document.getElementById('titulo-fin').innerText = razon;
         document.getElementById('score-final').innerText = estado.puntos;
