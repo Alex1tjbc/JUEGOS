@@ -38,8 +38,8 @@
 
         .hoyo {
             position: absolute; 
-            width: 75px; 
-            height: 75px; 
+            width: 60px; 
+            height: 60px; 
             background: var(--agujero-vortex);
             border-radius: 50%; 
             box-shadow: 
@@ -275,12 +275,17 @@
     function generarAgujeros() {
         const agCont = document.getElementById('agujeros-container');
         agCont.innerHTML = '';
-        const numHoyos = 6;
+        const numHoyos = 3; // Reducido a solo 3 hoyos
+        const posiciones = [
+            { left: 25, top: 30 },
+            { left: 75, top: 50 },
+            { left: 50, top: 75 }
+        ];
         for (let i = 0; i < numHoyos; i++) {
             let div = document.createElement('div');
             div.className = 'hoyo';
-            div.style.left = (15 + Math.random() * 70) + "%";
-            div.style.top = (15 + Math.random() * 70) + "%";
+            div.style.left = posiciones[i].left + "%";
+            div.style.top = posiciones[i].top + "%";
             agCont.appendChild(div);
         }
     }
@@ -393,7 +398,7 @@
             let hoyoCenterY = ((hoyoRect.top + hoyoRect.height / 2 - tableroRect.top) / tableroRect.height) * 100;
 
             let distHoyo = Math.sqrt(Math.pow(x - hoyoCenterX, 2) + Math.pow(y - hoyoCenterY, 2));
-            if (distHoyo < 6) {
+            if (distHoyo < 5) { // Radio de colisión reducido
                 perderJuego();
             }
         });
