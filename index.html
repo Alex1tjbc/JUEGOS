@@ -3,92 +3,159 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Balance Challenge</title>
+    <title>Pelota Loca: Challenge</title>
     <style>
-        body { margin: 0; background: #00b894; font-family: sans-serif; overflow: hidden; color: white; text-align: center; }
-        #app { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
+        body { margin: 0; padding: 0; overflow: hidden; background: #1a1a1a; font-family: 'Courier New', Courier, monospace; color: #00ff00; }
+        #ui { position: absolute; width: 100%; text-align: center; top: 20px; z-index: 10; }
         
-        /* La Charola */
-        #tray {
-            width: 300px; height: 300px; background: rgba(255,255,255,0.2);
-            border: 10px solid white; border-radius: 50%; position: relative;
-            display: flex; align-items: center; justify-content: center;
-            transition: transform 0.1s;
+        #charola {
+            width: 85vw; height: 85vw; background: radial-gradient(circle, #333, #000);
+            border: 10px solid #555; border-radius: 50%; position: absolute;
+            top: 55%; left: 50%; transform: translate(-50%, -50%);
+            box-shadow: 0 0 50px rgba(0,0,0,1); overflow: hidden;
         }
 
-        #item { font-size: 80px; position: absolute; transition: all 0.1s ease-out; }
+        /* El Agujero */
+        #agujero {
+            width: 60px; height: 60px; background: #000; border: 2px solid #ff0000;
+            border-radius: 50%; position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%); box-shadow: inset 0 0 20px #ff0000;
+        }
 
-        .btn { background: white; color: #00b894; padding: 20px 40px; border-radius: 50px; 
-               border: none; font-size: 1.5rem; font-weight: bold; cursor: pointer; }
-        
-        #status { font-size: 1.5rem; margin-bottom: 20px; padding: 0 20px; }
+        #pelota {
+            width: 40px; height: 40px; background: radial-gradient(circle at 30% 30%, #fff, #555);
+            border-radius: 50%; position: absolute; top: 20%; left: 50%;
+            transform: translate(-50%, -50%); font-size: 30px;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        #timer-box { font-size: 2rem; color: #ff0000; font-weight: bold; }
+        .btn { padding: 20px 40px; font-size: 1.5rem; background: #ff0000; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        #overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
     </style>
 </head>
 <body>
 
-<div id="app">
-    <div id="status">Sostén el celular firme y camina</div>
-    
-    <div id="tray">
-        <div id="item">🍎</div>
-    </div>
+<div id="overlay">
+    <h1>PELOTA VS AGUJERO</h1>
+    <p style="color:white; text-align:center">¡Cuidado! No dejes que la pelota caiga en el centro<br>ni que toque los bordes.</p>
+    <button class="btn" onclick="activar()">INICIAR RETO</button>
+</div>
 
-    <br>
-    <button id="btnStart" class="btn" onclick="start()">¡JUGAR!</button>
+<div id="ui">
+    <div id="timer-box">TIEMPO: <span id="segundos">15</span>s</div>
+    <div id="lvl-txt">NIVEL 1: Pelota de Tenis 🎾</div>
+</div>
+
+<div id="charola">
+    <div id="agujero"></div>
+    <div id="pelota">🎾</div>
 </div>
 
 <script>
-    let active = false;
-    let level = 1;
-    const items = ["🍎", "🥚", "☕", "🍷", "🎂", "🐟", "👶"];
+    let x = 50, y = 25; // Inicia arriba para no caer al agujero de golpe
+    let vx = 0, vy = 0;
+    let incliX = 0, incliY = 0;
+    let activo = false;
+    let nivel = 0;
+    let tiempo = 15;
 
-    function speak(text) {
-        const msg = new SpeechSynthesisUtterance(text);
-        msg.lang = 'es-MX';
-        window.speechSynthesis.speak(msg);
+    const niveles = [
+        { art: "🎾", nom: "Pelota de Tenis", dif: 1.2, t: 15 },
+        { art: "⚽", nom: "Balón de Fútbol", dif: 1.8, t: 15 },
+        { art: "🏀", nom: "Basquetbol", dif: 2.5, t: 20 },
+        { art: "🎱", nom: "Bola de Billar", dif: 3.5, t: 20 },
+        { art: "💣", nom: "¡BOMBA!", dif: 5.0, t: 30 }
+    ];
+
+    function hablar(t) {
+        window.speechSynthesis.cancel();
+        let m = new SpeechSynthesisUtterance(t);
+        m.lang = 'es-MX';
+        window.speechSynthesis.speak(m);
     }
 
-    function start() {
-        // Pedir permiso para sensores (Requerido en iPhone)
+    async function activar() {
         if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-            DeviceOrientationEvent.requestPermission()
-                .then(state => {
-                    if (state === 'granted') initGame();
-                });
+            const permission = await DeviceOrientationEvent.requestPermission();
+            if (permission === 'granted') iniciar();
+        } else { iniciar(); }
+    }
+
+    function iniciar() {
+        document.getElementById('overlay').style.display = 'none';
+        activo = true;
+        window.addEventListener('deviceorientation', (e) => {
+            incliX = e.gamma; 
+            incliY = e.beta;
+        });
+        hablar("Nivel uno. Tenis. ¡Que no caiga en el agujero!");
+        setInterval(cuentaRegresiva, 1000);
+        update();
+    }
+
+    function cuentaRegresiva() {
+        if (!activo) return;
+        tiempo--;
+        document.getElementById('segundos').innerText = tiempo;
+        if (tiempo <= 0) pasarNivel();
+    }
+
+    function pasarNivel() {
+        nivel++;
+        if (nivel < niveles.length) {
+            tiempo = niveles[nivel].t;
+            document.getElementById('lvl-txt').innerText = `NIVEL ${nivel+1}: ${niveles[nivel].nom} ${niveles[nivel].art}`;
+            document.getElementById('pelota').innerText = niveles[nivel].art;
+            x = 50; y = 25; vx = 0; vy = 0;
+            hablar("¡Bien hecho! Siguiente nivel: " + niveles[nivel].nom);
         } else {
-            initGame();
+            activo = false;
+            alert("¡MAESTRO DEL EQUILIBRIO!");
+            location.reload();
         }
     }
 
-    function initGame() {
-        document.getElementById('btnStart').style.display = 'none';
-        active = true;
-        speak("Nivel 1. Camina con cuidado.");
-        
-        window.addEventListener('deviceorientation', (e) => {
-            if (!active) return;
+    function update() {
+        if (!activo) return;
 
-            // Beta (adelante/atrás) y Gamma (izq/der)
-            let tiltX = e.gamma; 
-            let tiltY = e.beta;
+        let d = niveles[nivel].dif;
+        vx += incliX * 0.08 * d;
+        vy += incliY * 0.08 * d;
 
-            // Mover visualmente el objeto
-            const item = document.getElementById('item');
-            item.style.transform = `translate(${tiltX * 3}px, ${tiltY * 3}px)`;
+        // Fricción baja (para que la pelota ruede mucho)
+        vx *= 0.98;
+        vy *= 0.98;
 
-            // Lógica de "Caída" (Si se inclina más de 25 grados)
-            if (Math.abs(tiltX) > 25 || Math.abs(tiltY) > 25) {
-                gameOver();
-            }
-        });
+        x += vx * 0.1;
+        y += vy * 0.1;
+
+        const p = document.getElementById('pelota');
+        p.style.left = x + "%";
+        p.style.top = y + "%";
+
+        let dx = x - 50;
+        let dy = y - 50;
+        let dist = Math.sqrt(dx*dx + dy*dy);
+
+        // CONDICIÓN DE PERDER
+        // 1. Caer al agujero (Centro)
+        if (dist < 8) {
+            perder("¡Te tragó el agujero negro!");
+        }
+        // 2. Tocar el borde de la charola
+        if (dist > 44) {
+            perder("¡La pelota se salió de la bandeja!");
+        }
+
+        if (activo) requestAnimationFrame(update);
     }
 
-    function gameOver() {
-        active = false;
-        document.getElementById('status').innerText = "¡SE CAYÓ!";
-        speak("¡Oh no! Se ha caído el objeto. Has perdido.");
-        document.getElementById('item').style.transform = "translateY(500px)";
-        setTimeout(() => location.reload(), 3000);
+    function perder(razon) {
+        activo = false;
+        hablar(razon);
+        alert(razon + " Perdiste en el Nivel " + (nivel+1));
+        location.reload();
     }
 </script>
 </body>
