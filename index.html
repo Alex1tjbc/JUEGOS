@@ -7,73 +7,190 @@
     <style>
         :root { 
             --borde-dorado: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FFD700 100%);
-            --hielo: radial-gradient(circle at 50% 50%, #e0f2f7 0%, #b3e5fc 50%, #81d4fa 100%);
-            --agujero-vortex: #0a0a0a;
-            --sombra-pelota: rgba(0,0,0,0.6);
-            --fondo-oscuro: #1a1a1a;
+            --hielo: radial-gradient(circle at 30% 30%, #e3f2fd 0%, #90caf9 40%, #42a5f5 100%);
+            --agujero-vortex: radial-gradient(circle, #1a0033 0%, #000000 70%);
+            --sombra-pelota: rgba(255,100,0,0.7);
+            --fondo-oscuro: linear-gradient(135deg, #0a0e27 0%, #1a1a2e 50%, #16213e 100%);
         }
         body { 
             margin: 0; padding: 0; overflow: hidden; 
-            background: var(--fondo-oscuro); font-family: 'Segoe UI', sans-serif; 
-            perspective: 1200px;
+            background: var(--fondo-oscuro); 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            perspective: 1500px;
         }
         
         #escenario { width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; }
 
         #tablero {
-            width: 90vw; height: 130vw; background: var(--hielo);
-            border: 20px solid transparent; border-image: var(--borde-dorado) 30;
-            border-radius: 25px; position: relative;
-            box-shadow: 0 50px 100px rgba(0,0,0,0.8);
+            width: 90vw; height: 130vw; 
+            background: var(--hielo);
+            border: 22px solid transparent; 
+            border-image: var(--borde-dorado) 30;
+            border-radius: 30px; 
+            position: relative;
+            box-shadow: 
+                0 50px 100px rgba(0,0,0,0.9),
+                inset 0 0 80px rgba(255,255,255,0.1),
+                0 0 40px rgba(255,215,0,0.3);
             transform-style: preserve-3d;
+            transition: transform 0.1s ease-out;
         }
 
         .hoyo {
-            position: absolute; width: 75px; height: 75px; background: var(--agujero-vortex);
-            border-radius: 50%; box-shadow: inset 0 10px 20px #000, 0 0 15px rgba(255,0,0,0.5);
+            position: absolute; 
+            width: 75px; 
+            height: 75px; 
+            background: var(--agujero-vortex);
+            border-radius: 50%; 
+            box-shadow: 
+                inset 0 15px 30px rgba(0,0,0,0.9), 
+                0 0 25px rgba(138,43,226,0.6),
+                0 0 40px rgba(75,0,130,0.4);
             transform: translate(-50%, -50%);
-            animation: vortex 2s linear infinite; /* Animación de remolino */
+            animation: vortex 3s ease-in-out infinite;
+            overflow: hidden;
         }
-        @keyframes vortex { to { transform: translate(-50%, -50%) rotate(360deg); } }
+        .hoyo::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 150%;
+            height: 150%;
+            background: conic-gradient(from 0deg, transparent 0%, rgba(138,43,226,0.3) 50%, transparent 100%);
+            transform: translate(-50%, -50%);
+            animation: spin 2s linear infinite;
+        }
+        @keyframes vortex { 
+            0% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.05); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+        @keyframes spin {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
 
         .personaje {
-            position: absolute; font-size: 38px; transform: translate(-50%, -50%);
-            z-index: 8; transition: all 0.4s ease-out; /* Animación suave al moverse */
-            pointer-events: none; /* No bloquea la pelota */
+            position: absolute; 
+            font-size: 42px; 
+            transform: translate(-50%, -50%);
+            z-index: 8; 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
+            animation: flotar 2s ease-in-out infinite;
+        }
+        @keyframes flotar {
+            0%, 100% { transform: translate(-50%, -50%) translateY(0px); }
+            50% { transform: translate(-50%, -50%) translateY(-5px); }
         }
 
         #pelota {
-            width: 55px; height: 55px; position: absolute; 
-            transform: translate(-50%, -50%); font-size: 45px;
-            display: flex; align-items: center; justify-content: center;
-            z-index: 10; filter: drop_shadow(0 12px 8px var(--sombra-pelota));
-            animation: rodar 0.1s linear infinite; /* Simula rodar */
+            width: 58px; 
+            height: 58px; 
+            position: absolute; 
+            transform: translate(-50%, -50%); 
+            font-size: 48px;
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            z-index: 10; 
+            filter: drop-shadow(0 15px 12px var(--sombra-pelota))
+                    drop-shadow(0 0 20px rgba(255,150,0,0.5));
+            animation: meteoroPulso 1.5s ease-in-out infinite;
         }
-        @keyframes rodar { from { transform: translate(-50%, -50%) rotate(0deg); } to { transform: translate(-50%, -50%) rotate(360deg); } }
+        @keyframes meteoroPulso {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.08); }
+        }
 
-        #pelota::after { /* Efecto de rastro de humo */
-            content: ''; position: absolute; top: 50%; left: 50%;
-            width: 30px; height: 30px; background: rgba(255,255,255,0.2);
-            border-radius: 50%; filter: blur(10px); opacity: 0;
-            animation: humo 1s forwards;
+        #pelota::after {
+            content: ''; 
+            position: absolute; 
+            top: 50%; 
+            left: 50%;
+            width: 35px; 
+            height: 35px; 
+            background: radial-gradient(circle, rgba(255,150,50,0.4) 0%, transparent 70%);
+            border-radius: 50%; 
+            filter: blur(12px); 
+            opacity: 0;
+            animation: estela 0.8s ease-out infinite;
             pointer-events: none;
+            z-index: -1;
         }
-        @keyframes humo {
-            0% { transform: scale(0); opacity: 0.8; }
-            100% { transform: scale(1.5); opacity: 0; }
+        @keyframes estela {
+            0% { 
+                transform: translate(-50%, -50%) scale(0.5); 
+                opacity: 0.9; 
+            }
+            100% { 
+                transform: translate(-50%, -50%) scale(2) translateX(-30px); 
+                opacity: 0; 
+            }
         }
 
-        #ui { position: fixed; top: 10px; width: 100%; text-align: center; color: white; z-index: 100; text-shadow: 2px 2px 4px #000; }
-        #puntos-ui { font-size: 1.8rem; font-weight: bold; color: #76ff03; }
-        #timer-ui { font-size: 3.5rem; font-weight: bold; margin: 5px 0; color: #00e5ff; }
-        #dialogo { font-size: 1.2rem; background: rgba(0,0,0,0.6); padding: 8px 15px; border-radius: 10px; display: inline-block; min-width: 200px; }
+        #ui { 
+            position: fixed; 
+            top: 15px; 
+            width: 100%; 
+            text-align: center; 
+            color: white; 
+            z-index: 100; 
+            text-shadow: 0 0 10px rgba(0,0,0,0.8), 0 4px 6px rgba(0,0,0,0.6); 
+        }
+        #puntos-ui { 
+            font-size: 2rem; 
+            font-weight: bold; 
+            color: #76ff03; 
+            text-shadow: 0 0 15px rgba(118,255,3,0.6);
+        }
+        #timer-ui { 
+            font-size: 3.8rem; 
+            font-weight: bold; 
+            margin: 8px 0; 
+            color: #00e5ff; 
+            text-shadow: 0 0 20px rgba(0,229,255,0.8);
+            animation: timerPulso 1s ease-in-out infinite;
+        }
+        @keyframes timerPulso {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        #dialogo { 
+            font-size: 1.3rem; 
+            background: rgba(0,0,0,0.75); 
+            padding: 12px 20px; 
+            border-radius: 15px; 
+            display: inline-block; 
+            min-width: 250px; 
+            border: 2px solid rgba(255,215,0,0.3);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
         
         .overlay {
             position: fixed; top:0; left:0; width:100%; height:100%;
-            background: rgba(0,0,0,0.95); display: flex; flex-direction: column;
+            background: linear-gradient(135deg, rgba(0,0,0,0.95) 0%, rgba(20,20,40,0.97) 100%);
+            display: flex; flex-direction: column;
             align-items: center; justify-content: center; z-index: 1000; color: white;
         }
-        .btn { padding: 25px 60px; font-size: 1.8rem; background: var(--borde-dorado); color: #000; border: none; border-radius: 50px; font-weight: bold; cursor: pointer; }
+        .btn { 
+            padding: 25px 60px; 
+            font-size: 1.8rem; 
+            background: var(--borde-dorado); 
+            color: #000; 
+            border: none; 
+            border-radius: 50px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            box-shadow: 0 10px 30px rgba(255,215,0,0.4);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .btn:active {
+            transform: scale(0.95);
+            box-shadow: 0 5px 15px rgba(255,215,0,0.6);
+        }
     </style>
 </head>
 <body>
@@ -93,10 +210,14 @@
 </div>
 
 <div id="intro" class="overlay">
-    <h1 style="color:#00e5ff; font-size:3rem;">¡CAZADOR DE EMOTES!</h1>
-    <p style="text-align:center; padding:0 20px;">
+    <h1 style="color:#00e5ff; font-size:3rem; text-shadow: 0 0 20px rgba(0,229,255,0.8);">¡CAZADOR DE EMOTES!</h1>
+    <p style="text-align:center; padding:0 20px; font-size:1.2rem; line-height: 1.6;">
         Guía tu meteorito para atrapar a los emojis.<br>
-        ¡Pero cuidado! Si caes al hoyo, pierdes todos tus puntos.
+        <span style="color:#76ff03;">😀 = 10pts</span> | 
+        <span style="color:#00e5ff;">😎 = 20pts</span> | 
+        <span style="color:#ffd700;">🚀 = 50pts</span> | 
+        <span style="color:#ff1744;">👽 = -30pts</span><br>
+        <strong style="color:#ff5252;">¡Cuidado! Si caes al hoyo, pierdes todos tus puntos.</strong>
     </p>
     <button class="btn" onclick="iniciarJuego()">¡QUE COMIENCE LA CAZA!</button>
 </div>
@@ -106,18 +227,17 @@
     let incliX = 0, incliY = 0, juegoActivo = false;
     let puntos = 0, segundos = 60;
     
-    // Lista de personajes y sus valores
     const tiposPersonajes = [
         { emoji: "😀", valor: 10, prob: 0.4, speed: 0.5 },
         { emoji: "😎", valor: 20, prob: 0.3, speed: 0.8 },
         { emoji: "🚀", valor: 50, prob: 0.2, speed: 1.2 },
-        { emoji: "👽", valor: -30, prob: 0.1, speed: 1.0 } // Alien es el villano
+        { emoji: "👽", valor: -30, prob: 0.1, speed: 1.0 }
     ];
 
-    let personajesEnJuego = {}; // Almacena los personajes en el tablero
+    let personajesEnJuego = {};
 
     const frasesIntro = ["¡Bienvenidos, cazadores!", "¡Que gane el mejor!", "¿Listo para el reto?"];
-    const frasesAtrapar = ["¡Bien hecho!", "¡Puntos para la casa!", "¡Otro más a la bolsa!"];
+    const frasesAtrapar = ["¡Bien hecho!", "¡Puntos para la casa!", "¡Otro más a la bolsa!", "¡Excelente captura!"];
     const frasesAlien = ["¡Oh no, un alienígena!", "¡Te robó puntos!", "¡Cuidado con esos extraterrestres!"];
     const frasesPerder = ["¡Vaya, qué lástima! Puntos perdidos.", "¡Al hoyo! Mejor suerte la próxima.", "¡El tablero te ganó!"];
     const frasesGanar = ["¡Increíble! ¡Eres el cazador definitivo!", "¡Puntuación récord!", "¡Victoria contundente!"];
@@ -127,8 +247,8 @@
         let texto = personalizada ? listaFrases : listaFrases[Math.floor(Math.random() * listaFrases.length)];
         let m = new SpeechSynthesisUtterance(texto);
         m.lang = 'es-MX'; 
-        m.pitch = 1.0; // Voz neutral
-        m.rate = 1.0;  // Velocidad normal
+        m.pitch = 1.0;
+        m.rate = 1.0;
         document.getElementById('dialogo').innerText = texto;
         window.speechSynthesis.speak(m);
     }
@@ -146,15 +266,15 @@
         window.addEventListener('deviceorientation', e => { incliX = e.gamma; incliY = e.beta; });
         actualizarUI();
         generarAgujeros();
-        setInterval(spawnPersonaje, 2000); // Genera personajes cada 2 segundos
+        setInterval(spawnPersonaje, 2000);
         contarTiempo();
+        hablar(frasesIntro);
         gameLoop();
     }
 
     function generarAgujeros() {
         const agCont = document.getElementById('agujeros-container');
         agCont.innerHTML = '';
-        // Puedes hacer que la cantidad y posición de agujeros cambie por nivel si quieres.
         const numHoyos = 6;
         for (let i = 0; i < numHoyos; i++) {
             let div = document.createElement('div');
@@ -223,7 +343,6 @@
     function gameLoop() {
         if (!juegoActivo) return;
 
-        // Movimiento de la pelota
         vx += incliX * 0.05;
         vy += incliY * 0.05;
         vx *= 0.95; vy *= 0.95;
@@ -233,19 +352,15 @@
         const tablero = document.getElementById('tablero');
         pelota.style.left = x + "%";
         pelota.style.top = y + "%";
-        pelota.style.transform = `translate(-50%, -50%) rotate(${x+y}deg)`; // Simula rotación
 
-        // Inclinación 3D del tablero
         tablero.style.transform = `rotateX(${-incliY*0.4}deg) rotateY(${incliX*0.4}deg)`;
 
-        // Movimiento y colisiones de personajes
         for (let id in personajesEnJuego) {
             let p = personajesEnJuego[id];
             
             p.x += p.vx;
             p.y += p.vy;
 
-            // Rebote en los bordes del tablero para personajes
             if (p.x < 5 || p.x > 95) p.vx *= -1;
             if (p.y < 5 || p.y > 95) p.vy *= -1;
 
@@ -257,9 +372,8 @@
                 charDiv.style.left = p.x + "%";
                 charDiv.style.top = p.y + "%";
 
-                // Colisión pelota con personaje
                 let dist = Math.sqrt(Math.pow(x - p.x, 2) + Math.pow(y - p.y, 2));
-                if (dist < 6) { // Radio de colisión
+                if (dist < 6) {
                     puntos += p.tipo.valor;
                     if (p.tipo.valor < 0) { hablar(frasesAlien); } 
                     else { hablar(frasesAtrapar); }
@@ -270,24 +384,21 @@
             }
         }
 
-        // Colisión con agujeros
         const hoyos = document.querySelectorAll('.hoyo');
         hoyos.forEach(hoyo => {
             let hoyoRect = hoyo.getBoundingClientRect();
             let tableroRect = tablero.getBoundingClientRect();
             
-            // Convertir coordenadas del hoyo a porcentaje del tablero
             let hoyoCenterX = ((hoyoRect.left + hoyoRect.width / 2 - tableroRect.left) / tableroRect.width) * 100;
             let hoyoCenterY = ((hoyoRect.top + hoyoRect.height / 2 - tableroRect.top) / tableroRect.height) * 100;
 
             let distHoyo = Math.sqrt(Math.pow(x - hoyoCenterX, 2) + Math.pow(y - hoyoCenterY, 2));
-            if (distHoyo < 6) { // Radio de colisión con hoyo
+            if (distHoyo < 6) {
                 perderJuego();
             }
         });
 
-        // Colisión con bordes del tablero principal
-        if (x < 3 || x > 97 || y < 3 || y > 97) { // Márgenes más ajustados para el borde del tablero
+        if (x < 3 || x > 97 || y < 3 || y > 97) {
             perderJuego();
         }
 
