@@ -3,47 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pelota Loca: Challenge</title>
+    <title>Balance familiar</title>
     <style>
-        body { margin: 0; padding: 0; overflow: hidden; background: #1a1a1a; font-family: 'Courier New', Courier, monospace; color: #00ff00; }
-        #ui { position: absolute; width: 100%; text-align: center; top: 20px; z-index: 10; }
+        body { margin: 0; padding: 0; overflow: hidden; background: #2c3e50; font-family: sans-serif; color: white; text-align: center; }
+        #ui { position: absolute; width: 100%; top: 20px; z-index: 10; }
         
         #charola {
-            width: 85vw; height: 85vw; background: radial-gradient(circle, #333, #000);
-            border: 10px solid #555; border-radius: 50%; position: absolute;
-            top: 55%; left: 50%; transform: translate(-50%, -50%);
-            box-shadow: 0 0 50px rgba(0,0,0,1); overflow: hidden;
+            width: 80vw; height: 80vw; background: radial-gradient(circle, #7f8c8d, #34495e);
+            border: 12px solid #ecf0f1; border-radius: 50%; position: absolute;
+            top: 50%; left: 50%; transform: translate(-50%, -50%);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.5);
         }
-        /* El Agujero */
+
         #agujero {
-            width: 60px; height: 60px; background: #000; border: 2px solid #ff0000;
+            width: 50px; height: 50px; background: #000; border: 3px solid #e74c3c;
             border-radius: 50%; position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%); box-shadow: inset 0 0 20px #ff0000;
+            transform: translate(-50%, -50%); box-shadow: inset 0 0 15px #000;
         }
 
         #pelota {
-            width: 40px; height: 40px; background: radial-gradient(circle at 30% 30%, #fff, #555);
-            border-radius: 50%; position: absolute; top: 20%; left: 50%;
-            transform: translate(-50%, -50%); font-size: 30px;
-            display: flex; align-items: center; justify-content: center;
+            width: 45px; height: 45px; position: absolute; 
+            top: 20%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 35px; display: flex; align-items: center; justify-content: center;
+            filter: drop-shadow(0 5px 5px rgba(0,0,0,0.4));
         }
 
-        #timer-box { font-size: 2rem; color: #ff0000; font-weight: bold; }
-        .btn { padding: 20px 40px; font-size: 1.5rem; background: #ff0000; color: white; border: none; border-radius: 5px; cursor: pointer; }
-        #overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
+        .btn { padding: 15px 30px; font-size: 1.2rem; background: #27ae60; color: white; border: none; border-radius: 10px; font-weight: bold; }
+        #overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
+        #timer { font-size: 2.5rem; font-weight: bold; color: #f1c40f; }
     </style>
 </head>
 <body>
 
 <div id="overlay">
-    <h1>PELOTA VS AGUJERO</h1>
-    <p style="color:white; text-align:center">¡Cuidado! No dejes que la pelota caiga en el centro<br>ni que toque los bordes.</p>
-    <button class="btn" onclick="activar()">INICIAR RETO</button>
+    <h2>🏆 RETO DE EQUILIBRIO</h2>
+    <p>Mantén la pelota lejos del centro<br>¡Sobrevive hasta que el tiempo acabe!</p>
+    <button class="btn" onclick="activar()">¡EMPEZAR NIVEL!</button>
 </div>
 
 <div id="ui">
-    <div id="timer-box">TIEMPO: <span id="segundos">15</span>s</div>
-    <div id="lvl-txt">NIVEL 1: Pelota de Tenis 🎾</div>
+    <div id="timer"><span id="segundos">10</span>s</div>
+    <div id="lvl-txt" style="font-size: 1.2rem;">NIVEL 1</div>
 </div>
 
 <div id="charola">
@@ -52,19 +52,19 @@
 </div>
 
 <script>
-    let x = 50, y = 25; // Inicia arriba para no caer al agujero de golpe
+    let x = 50, y = 20; // Posición inicial
     let vx = 0, vy = 0;
     let incliX = 0, incliY = 0;
     let activo = false;
     let nivel = 0;
-    let tiempo = 15;
+    let tiempo = 10;
 
     const niveles = [
-        { art: "🎾", nom: "Pelota de Tenis", dif: 1.2, t: 15 },
-        { art: "⚽", nom: "Balón de Fútbol", dif: 1.8, t: 15 },
-        { art: "🏀", nom: "Basquetbol", dif: 2.5, t: 20 },
-        { art: "🎱", nom: "Bola de Billar", dif: 3.5, t: 20 },
-        { art: "💣", nom: "¡BOMBA!", dif: 5.0, t: 30 }
+        { art: "🎾", nom: "Tenis", dif: 0.5, t: 10 },
+        { art: "⚽", nom: "Fútbol", dif: 0.7, t: 12 },
+        { art: "🏀", nom: "Basquet", dif: 0.9, t: 15 },
+        { art: "🎱", nom: "Billar", dif: 1.2, t: 15 },
+        { art: "💣", nom: "Bomba", dif: 1.5, t: 20 }
     ];
 
     function hablar(t) {
@@ -85,32 +85,39 @@
         document.getElementById('overlay').style.display = 'none';
         activo = true;
         window.addEventListener('deviceorientation', (e) => {
+            // Suavizado de entrada
             incliX = e.gamma; 
             incliY = e.beta;
         });
-        hablar("Nivel uno. Tenis. ¡Que no caiga en el agujero!");
-        setInterval(cuentaRegresiva, 1000);
+        hablar("¡Mucha suerte!");
+        correrTiempo();
         update();
     }
 
-    function cuentaRegresiva() {
+    function correrTiempo() {
         if (!activo) return;
-        tiempo--;
-        document.getElementById('segundos').innerText = tiempo;
-        if (tiempo <= 0) pasarNivel();
+        if (tiempo <= 0) {
+            pasarNivel();
+        } else {
+            document.getElementById('segundos').innerText = tiempo;
+            tiempo--;
+            setTimeout(correrTiempo, 1000);
+        }
     }
 
     function pasarNivel() {
         nivel++;
         if (nivel < niveles.length) {
             tiempo = niveles[nivel].t;
-            document.getElementById('lvl-txt').innerText = `NIVEL ${nivel+1}: ${niveles[nivel].nom} ${niveles[nivel].art}`;
+            document.getElementById('lvl-txt').innerText = `NIVEL ${nivel+1}: ${niveles[nivel].nom}`;
             document.getElementById('pelota').innerText = niveles[nivel].art;
-            x = 50; y = 25; vx = 0; vy = 0;
-            hablar("¡Bien hecho! Siguiente nivel: " + niveles[nivel].nom);
+            x = 50; y = 20; vx = 0; vy = 0;
+            hablar("¡Nivel superado! Siguiente reto.");
+            document.getElementById('overlay').style.display = 'flex';
         } else {
             activo = false;
-            alert("¡MAESTRO DEL EQUILIBRIO!");
+            hablar("¡Increíble, ganaste!");
+            alert("¡CAMPEÓN!");
             location.reload();
         }
     }
@@ -118,16 +125,16 @@
     function update() {
         if (!activo) return;
 
+        // FÍSICA SUAVIZADA
         let d = niveles[nivel].dif;
-        vx += incliX * 0.08 * d;
-        vy += incliY * 0.08 * d;
+        vx += incliX * 0.03 * d; // Fuerza reducida
+        vy += incliY * 0.03 * d;
 
-        // Fricción baja (para que la pelota ruede mucho)
-        vx *= 0.98;
-        vy *= 0.98;
+        vx *= 0.92; // Mucha más fricción (se frena más fácil)
+        vy *= 0.92;
 
-        x += vx * 0.1;
-        y += vy * 0.1;
+        x += vx;
+        y += vy;
 
         const p = document.getElementById('pelota');
         p.style.left = x + "%";
@@ -137,15 +144,9 @@
         let dy = y - 50;
         let dist = Math.sqrt(dx*dx + dy*dy);
 
-        // CONDICIÓN DE PERDER
-        // 1. Caer al agujero (Centro)
-        if (dist < 8) {
-            perder("¡Te tragó el agujero negro!");
-        }
-        // 2. Tocar el borde de la charola
-        if (dist > 44) {
-            perder("¡La pelota se salió de la bandeja!");
-        }
+        // CONDICIÓN DE PERDER (Márgenes más generosos)
+        if (dist < 7) perder("¡Caíste al centro!");
+        if (dist > 45) perder("¡Te saliste!");
 
         if (activo) requestAnimationFrame(update);
     }
@@ -153,7 +154,7 @@
     function perder(razon) {
         activo = false;
         hablar(razon);
-        alert(razon + " Perdiste en el Nivel " + (nivel+1));
+        alert(razon + "\nInténtalo de nuevo.");
         location.reload();
     }
 </script>
