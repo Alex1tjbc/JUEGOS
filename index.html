@@ -3,390 +3,443 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cazador: Nivel Gráfico 2</title>
+    <title>Neon Striker: Arcade Edition</title>
     <style>
         :root { 
-            --fondo-espacio: radial-gradient(circle at center, #1a1a2e 0%, #0a0e27 100%);
-            /* Paleta de colores neón */
+            --fondo-espacio: radial-gradient(circle at center, #1a1a2e 0%, #000000 100%);
             --neon-azul: #00f3ff;
             --neon-oro: #ffd700;
-            --neon-rojo: #ff2e63;
+            --neon-rojo: #ff003c;
+            --neon-verde: #00ff66;
         }
         body { 
             margin: 0; padding: 0; overflow: hidden; 
             background: var(--fondo-espacio); 
-            font-family: 'Montserrat', sans-serif; /* Fuente más moderna si estuviera disponible, si no usa fallback */
-            perspective: 1200px; /* Perspectiva más dramática */
+            font-family: 'Segoe UI', sans-serif; 
+            perspective: 1200px; 
             touch-action: none;
+            user-select: none;
         }
         
         #escenario { width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; }
 
-        /* --- MEJORA 1: CANCHA DE HIELO PREMIUM --- */
+        /* TABLERO AVANZADO */
         #tablero {
             width: 90vw; height: 130vw; 
-            /* Capas de fondo para efecto complejo */
-            background-color: #e3f2fd;
+            background-color: #121212;
+            /* Grilla Cyberpunk */
             background-image: 
-                /* Luz central */
-                radial-gradient(circle at 50% 50%, rgba(255,255,255,0.8) 0%, rgba(187, 222, 251, 0.2) 60%, rgba(13, 71, 161, 0.5) 100%),
-                /* Ruido sutil para textura */
-                url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
-            background-blend-mode: overlay;
-
-            border: 12px solid #fff; 
-            /* Borde brillante futurista */
+                linear-gradient(rgba(0, 243, 255, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 243, 255, 0.1) 1px, transparent 1px);
+            background-size: 30px 30px;
+            border: 8px solid #fff; 
             box-shadow: 
-                0 0 30px var(--neon-azul), /* Resplandor externo */
-                inset 0 0 50px rgba(0, 168, 255, 0.3), /* Resplandor interno */
-                0 50px 100px rgba(0,0,0,0.8); /* Sombra de elevación */
-            border-radius: 35px; 
+                0 0 20px var(--neon-azul),
+                inset 0 0 60px rgba(0,0,0,0.8);
+            border-radius: 20px; 
             position: relative;
             transform-style: preserve-3d;
-            transition: transform 0.1s ease-out;
-            overflow: hidden; /* Para contener los efectos */
-        }
-        /* Efecto de reflejo vidrioso sobre el tablero */
-        #tablero::after {
-            content: '';
-            position: absolute; top:0; left:0; right:0; bottom:0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, transparent 50%, rgba(255,255,255,0.1) 100%);
-            pointer-events: none;
-        }
-
-        /* --- MEJORA 2: AGUJEROS VOLUMÉTRICOS --- */
-        .hoyo {
-            position: absolute; 
-            width: 70px; 
-            height: 70px; 
-            background: #000;
-            border-radius: 50%; 
-            /* Sombras internas profundas para simular profundidad 3D */
-            box-shadow: 
-                inset 0 15px 30px rgba(0,0,0,1), /* Sombra profunda superior */
-                inset 0 -5px 15px rgba(50,0,100,0.5), /* Luz de rebote inferior */
-                0 0 15px rgba(0,0,0,0.5), /* Sombra externa */
-                0 0 5px var(--neon-rojo); /* Borde de peligro brillante */
-            transform: translate(-50%, -50%);
-            z-index: 1;
             overflow: hidden;
         }
-        /* Efecto de vórtice dentro del hoyo */
-        .hoyo::before {
-            content: ''; position: absolute;
-            width: 200%; height: 200%; top: -50%; left: -50%;
-            background: conic-gradient(from 0deg, transparent, rgba(255, 46, 99, 0.3), transparent);
-            animation: spinHoyo 3s linear infinite;
-        }
-        @keyframes spinHoyo { 100% { transform: rotate(360deg); }}
 
-        .personaje {
+        /* HOYOS DE MUERTE INSTANTÁNEA */
+        .hoyo {
             position: absolute; 
-            font-size: 45px; 
+            width: 70px; height: 70px; 
+            background: #000;
+            border-radius: 50%; 
+            box-shadow: inset 0 0 20px #000, 0 0 10px var(--neon-rojo);
             transform: translate(-50%, -50%);
-            z-index: 8; 
-            /* Sombra suave para que floten */
-            filter: drop-shadow(0 8px 6px rgba(0,0,0,0.2));
-            animation: flotar 2.5s ease-in-out infinite;
+            z-index: 1;
         }
-        /* Los objetivos valiosos brillan */
-        .objetivo-oro { filter: drop-shadow(0 0 15px var(--neon-oro)); }
-        .objetivo-rojo { filter: drop-shadow(0 0 15px var(--neon-rojo)); }
-
-        @keyframes flotar {
-            0%, 100% { transform: translate(-50%, -50%) translateY(0px) rotate(0deg); }
-            50% { transform: translate(-50%, -50%) translateY(-8px) rotate(3deg); }
+        .hoyo::after {
+            content: "☠️"; position: absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size: 30px; opacity: 0.5;
         }
 
+        /* PERSONAJES */
+        .personaje {
+            position: absolute; font-size: 42px; 
+            transform: translate(-50%, -50%); z-index: 8; 
+            filter: drop-shadow(0 0 5px rgba(255,255,255,0.5));
+            will-change: transform, left, top;
+        }
+        .roja-furiosa {
+            filter: drop-shadow(0 0 15px var(--neon-rojo)) hue-rotate(45deg);
+            animation: vibrar 0.1s infinite;
+        }
+        @keyframes vibrar {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            25% { transform: translate(-52%, -52%) rotate(-5deg); }
+            75% { transform: translate(-48%, -48%) rotate(5deg); }
+            100% { transform: translate(-50%, -50%) rotate(0deg); }
+        }
+
+        /* BALÓN REALISTA */
         #pelota {
-            width: 52px; height: 52px; 
+            width: 50px; height: 50px; 
             position: absolute; 
-            background-color: #fdfdfd;
-            /* Patrón SVG del balón (mismo del anterior) */
-            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 0 L65 25 L35 25 Z' fill='%23222'/%3E%3Cpath d='M50 100 L65 75 L35 75 Z' fill='%23222'/%3E%3Cpath d='M0 50 L25 35 L25 65 Z' fill='%23222'/%3E%3Cpath d='M100 50 L75 35 L75 65 Z' fill='%23222'/%3E%3Cpath d='M50 50 L62 58 L50 70 L38 58 Z' fill='%23222' opacity='0.9'/%3E%3Ccircle cx='50' cy='50' r='13' fill='%23222'/%3E%3C/svg%3E");
-            background-size: cover;
+            background: radial-gradient(circle at 30% 30%, #fff, #ddd 40%, #333 100%);
+            /* Textura de hexágonos CSS */
+            background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10 0 L20 5 L20 15 L10 20 L0 15 L0 5 Z' fill='none' stroke='rgba(0,0,0,0.8)' stroke-width='1'/%3E%3C/svg%3E");
             border-radius: 50%;
             z-index: 10; 
-            /* Sombreado 3D mejorado */
-            box-shadow: 
-                inset -8px -8px 20px rgba(0,0,0,0.4),
-                inset 5px 5px 15px rgba(255,255,255,0.9);
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.5);
             transform: translate(-50%, -50%);
-            will-change: transform;
-        }
-        /* Sombra separada del balón para más realismo */
-        #sombra-pelota {
-            position: absolute; width: 52px; height: 52px;
-            background: rgba(0,0,0,0.3);
-            border-radius: 50%;
-            transform: translate(-50%, -50%) scale(1.1, 0.6); /* Aplastada */
-            filter: blur(8px);
-            z-index: 9;
         }
 
-        /* --- MEJORA 3: PARTICULAS CSS --- */
-        .particula {
-            position: absolute;
-            width: 8px; height: 8px;
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 15;
-            animation: explosion 0.8s ease-out forwards;
-        }
-        @keyframes explosion {
-            0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-            100% { transform: translate(var(--vx), var(--vy)) scale(0); opacity: 0; }
-        }
-
-        /* --- MEJORA 4: UI CON ATMÓSFERA --- */
+        /* UI SUPERIOR */
         #ui { 
-            position: fixed; top: 20px; width: 100%; 
-            text-align: center; color: white; z-index: 100; pointer-events: none;
+            position: fixed; top: 10px; width: 100%; 
+            display: flex; justify-content: space-between; padding: 0 20px; box-sizing: border-box;
+            z-index: 100; pointer-events: none;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.9);
+            font-weight: 900;
         }
-        #puntos-ui { 
-            font-size: 2.2rem; font-weight: 800; color: var(--neon-oro);
-            text-shadow: 0 0 20px var(--neon-oro); /* Bloom effect */
-        }
-        #timer-ui { 
-            font-size: 3.2rem; font-weight: 900; margin: 5px 0; color: var(--neon-azul);
-            text-shadow: 0 0 25px var(--neon-azul);
-        }
-        #dialogo { 
-            font-size: 1.2rem; 
-            background: rgba(10, 14, 39, 0.8); /* Fondo semitransparente oscuro */
-            color: var(--neon-azul);
-            padding: 10px 20px; border-radius: 30px; 
-            display: inline-block; 
-            backdrop-filter: blur(10px); /* Efecto de cristal esmerilado */
-            border: 1px solid rgba(0, 243, 255, 0.3);
-            box-shadow: 0 0 20px rgba(0, 243, 255, 0.2);
-        }
+        .ui-box { text-align: center; }
+        #vidas-ui { font-size: 2rem; letter-spacing: 5px; }
+        #puntos-ui { color: var(--neon-oro); font-size: 1.8rem; }
+        #timer-ui { color: var(--neon-azul); font-size: 1.8rem; }
         
+        #dialogo-container {
+            position: fixed; top: 80px; width: 100%; text-align: center; pointer-events: none; z-index: 99;
+        }
+        #dialogo {
+            background: rgba(0,0,0,0.7); color: #fff; padding: 8px 16px; border-radius: 20px;
+            display: inline-block; font-size: 1.2rem;
+            border: 1px solid var(--neon-azul);
+        }
+
+        /* PANTALLA INTRO / GAME OVER */
         .overlay {
             position: fixed; top:0; left:0; width:100%; height:100%;
-            background: rgba(5, 7, 20, 0.95);
+            background: rgba(0,0,0,0.95);
             display: flex; flex-direction: column;
             align-items: center; justify-content: center; z-index: 1000; color: white;
             backdrop-filter: blur(5px);
         }
         .btn { 
-            padding: 25px 60px; 
-            font-size: 1.6rem; text-transform: uppercase; letter-spacing: 2px;
-            background: transparent; color: var(--neon-azul);
-            border: 3px solid var(--neon-azul);
-            border-radius: 50px; font-weight: 800; cursor: pointer; 
-            box-shadow: 0 0 30px rgba(0, 243, 255, 0.4);
-            transition: all 0.3s;
+            padding: 20px 50px; font-size: 1.5rem; 
+            background: var(--neon-verde); color: #000; border: none; 
+            border-radius: 50px; font-weight: bold; cursor: pointer; margin-top: 20px;
+            box-shadow: 0 0 20px var(--neon-verde);
+            animation: pulsoBtn 1s infinite;
         }
-        .btn:hover { background: var(--neon-azul); color: #000; box-shadow: 0 0 60px var(--neon-azul); }
+        @keyframes pulsoBtn { 50% { transform: scale(1.05); } }
+
+        /* PARTICULAS */
+        .particula {
+            position: absolute; width: 10px; height: 10px; border-radius: 50%; pointer-events: none; z-index: 20;
+        }
     </style>
 </head>
 <body>
 
 <div id="ui">
-    <div id="puntos-ui">SCORE: <span id="puntos">0</span></div>
-    <div id="timer-ui"><span id="segundos">60</span></div>
-    <p id="dialogo">Nivel Gráfico 2: ¡Listo!</p>
+    <div class="ui-box">VIDAS<br><div id="vidas-ui">❤️❤️❤️</div></div>
+    <div class="ui-box">TIEMPO<br><div id="timer-ui">60</div></div>
+    <div class="ui-box">PUNTOS<br><div id="puntos-ui">0</div></div>
 </div>
+
+<div id="dialogo-container"><div id="dialogo">¡Inclina para rodar!</div></div>
 
 <div id="escenario">
     <div id="tablero">
-        <div id="fx-container"></div>
+        <div id="fx-layer"></div>
         <div id="agujeros-container"></div>
         <div id="personajes-container"></div>
-        <div id="sombra-pelota"></div>
         <div id="pelota"></div>
     </div>
 </div>
 
 <div id="intro" class="overlay">
-    <h1 style="font-size:3rem; margin-bottom:10px; text-shadow: 0 0 30px var(--neon-azul);">NEON STRIKER</h1>
-    <p style="text-align:center; padding:0 30px; line-height:1.6; font-size: 1.1rem; color: #ccc;">
-        Los gráficos han evolucionado.<br>Inclina para rodar.<br><br>
-        <span style="color:var(--neon-azul)">😀 +10</span> | 
-        <span style="color:var(--neon-azul)">😎 +20</span> | 
-        <span style="color:var(--neon-oro); text-shadow:0 0 10px var(--neon-oro)">🏆 +50</span> | 
-        <span style="color:var(--neon-rojo)">🟥 -30</span>
-    </p>
-    <button class="btn" onclick="iniciarJuego()">DESPEGAR</button>
+    <h1 style="color:var(--neon-azul); font-size: 2.5rem; text-align: center;">NEON STRIKER<br><span style="font-size:1.5rem; color:#fff;">ARCADE EDITION</span></h1>
+    <div style="text-align:left; background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px; margin: 10px;">
+        <p>🔴 <strong>Tarjetas Rojas:</strong> Pierdes 1 vida. ¡Explotan y se vuelven locas!</p>
+        <p>☠️ <strong>Hoyos Negros:</strong> Game Over inmediato.</p>
+        <p>🙂 <strong>Caritas/Copas:</strong> Suma puntos y desaparecen.</p>
+        <p>🔊 <strong>Sonido:</strong> ¡Activado!</p>
+    </div>
+    <button class="btn" onclick="iniciarJuego()">¡JUGAR AHORA!</button>
 </div>
 
 <script>
+    // --- MOTOR DE AUDIO SINTETIZADO (Sin archivos externos) ---
+    const AudioEngine = {
+        ctx: null,
+        init: function() {
+            window.AudioContext = window.AudioContext || window.webkitAudioContext;
+            this.ctx = new AudioContext();
+        },
+        playTone: function(freq, type, duration, vol=0.1) {
+            if (!this.ctx) return;
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+            gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start();
+            osc.stop(this.ctx.currentTime + duration);
+        },
+        playNoise: function(duration) {
+            if (!this.ctx) return;
+            const bufferSize = this.ctx.sampleRate * duration;
+            const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+            const noise = this.ctx.createBufferSource();
+            noise.buffer = buffer;
+            const gain = this.ctx.createGain();
+            gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
+            noise.connect(gain);
+            gain.connect(this.ctx.destination);
+            noise.start();
+        },
+        sonidoMoneda: function() { this.playTone(1200, 'sine', 0.1); setTimeout(()=>this.playTone(1800, 'sine', 0.2), 50); },
+        sonidoGolpe: function() { this.playTone(150, 'sawtooth', 0.3); this.playNoise(0.2); },
+        sonidoCopa: function() { this.playTone(600, 'square', 0.1); setTimeout(()=>this.playTone(900, 'square', 0.4), 100); },
+        sonidoGameOver: function() { this.playTone(300, 'sawtooth', 0.5); setTimeout(()=>this.playTone(250, 'sawtooth', 0.5), 400); setTimeout(()=>this.playTone(100, 'sawtooth', 1.0), 800); }
+    };
+
+    // --- VARIABLES DE JUEGO ---
     let x = 50, y = 50, vx = 0, vy = 0;
     let incliX = 0, incliY = 0, juegoActivo = false;
-    let puntos = 0, segundos = 60;
-    let rotacionAcumulada = 0;
+    let puntos = 0, segundos = 60, vidas = 3;
+    let rotacionPelota = 0;
 
-    const tiposPersonajes = [
-        { emoji: "😀", valor: 10, prob: 0.4, speed: 0.5, colorFn: '#00f3ff' },
-        { emoji: "😎", valor: 20, prob: 0.3, speed: 0.8, colorFn: '#00f3ff' },
-        { emoji: "🏆", valor: 50, prob: 0.1, speed: 1.3, claseExtra: 'objetivo-oro', colorFn: '#ffd700' },
-        { emoji: "🟥", valor: -30, prob: 0.2, speed: 1.0, claseExtra: 'objetivo-rojo', colorFn: '#ff2e63' }
+    const tipos = [
+        { emoji: "😀", valor: 10, prob: 0.4, speed: 0.5, tipo: 'bueno' },
+        { emoji: "😎", valor: 20, prob: 0.3, speed: 0.8, tipo: 'bueno' },
+        { emoji: "🏆", valor: 50, prob: 0.1, speed: 1.2, tipo: 'bueno' },
+        { emoji: "🟥", valor: -1, prob: 0.2, speed: 0.7, tipo: 'malo' } // Valor -1 es quitar vida
     ];
 
-    let personajesEnJuego = {};
-    const frases = ["¡Excelente!", "¡Imparable!", "¡Avanza!", "¡Cuidado ahí!"];
+    let entidades = {};
 
-    // --- NUEVA FUNCIÓN: SISTEMA DE PARTÍCULAS ---
-    function crearExplosion(posX, posY, color) {
-        const fxCont = document.getElementById('fx-container');
-        const numParticulas = 15; // Cantidad de partículas
-        
-        for (let i = 0; i < numParticulas; i++) {
-            let part = document.createElement('div');
-            part.className = 'particula';
-            part.style.left = posX + "%";
-            part.style.top = posY + "%";
-            part.style.backgroundColor = color;
-            part.style.boxShadow = `0 0 10px ${color}`;
-            
-            // Velocidad y dirección aleatoria para la explosión
-            let angle = Math.random() * Math.PI * 2;
-            let velocity = 30 + Math.random() * 50; // Distancia de explosión
-            let moveX = Math.cos(angle) * velocity + 'px';
-            let moveY = Math.sin(angle) * velocity + 'px';
-            
-            // Usamos variables CSS para pasar los valores a la animación
-            part.style.setProperty('--vx', moveX);
-            part.style.setProperty('--vy', moveY);
-
-            fxCont.appendChild(part);
-
-            // Limpieza: eliminar partícula del DOM después de la animación
-            setTimeout(() => part.remove(), 800);
-        }
-    }
-
+    // --- FUNCIONES CORE ---
     async function iniciarJuego() {
+        AudioEngine.init(); // Iniciar motor de audio
         if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-            try {
-                const res = await DeviceOrientationEvent.requestPermission();
-                if (res === 'granted') arrancarJuego();
-                else alert("Permiso de giroscopio denegado. No podrás mover el balón.");
-            } catch (e) { arrancarJuego(); }
-        } else { arrancarJuego(); }
-    }
-
-    function arrancarJuego() {
+            try { await DeviceOrientationEvent.requestPermission(); } catch (e) {}
+        }
         document.getElementById('intro').style.display = 'none';
-        juegoActivo = true;
-        x = 50; y = 50; vx = 0; vy = 0; segundos = 60; puntos = 0;
-        actualizarUI();
-        window.addEventListener('deviceorientation', manejarOrientacion);
-        generarAgujeros();
-        setInterval(spawnPersonaje, 1400);
+        resetJuego();
+        window.addEventListener('deviceorientation', e => {
+            incliX = Math.min(40, Math.max(-40, e.gamma || 0));
+            incliY = Math.min(40, Math.max(-40, e.beta || 0));
+        });
+        
+        setInterval(spawnEntidad, 1200);
+        loop();
         contarTiempo();
-        gameLoop();
     }
 
-    function manejarOrientacion(e) {
-        incliX = e.gamma || 0; 
-        incliY = e.beta || 0; 
-        incliX = Math.max(-40, Math.min(40, incliX));
-        incliY = Math.max(-40, Math.min(40, incliY));
+    function resetJuego() {
+        juegoActivo = true;
+        x = 50; y = 50; vx = 0; vy = 0;
+        puntos = 0; segundos = 60; vidas = 3;
+        entidades = {};
+        document.getElementById('personajes-container').innerHTML = '';
+        actualizarUI();
+        generarHoyos();
+        mostrarMensaje("¡A RODAR!");
     }
 
-    function generarAgujeros() {
-        const agCont = document.getElementById('agujeros-container');
-        agCont.innerHTML = '';
-        const posiciones = [{L:20,T:25}, {L:80,T:25}, {L:50,T:75}];
-        posiciones.forEach(pos => {
-            let div = document.createElement('div');
-            div.className = 'hoyo';
-            div.style.left = pos.L + "%"; div.style.top = pos.T + "%";
-            agCont.appendChild(div);
+    function spawnEntidad() {
+        if (!juegoActivo) return;
+        
+        // Selección aleatoria ponderada
+        let rand = Math.random(), acumulado = 0, elegido = tipos[0];
+        for (let t of tipos) {
+            acumulado += t.prob;
+            if (rand <= acumulado) { elegido = t; break; }
+        }
+
+        let ex = 10 + Math.random()*80, ey = 10 + Math.random()*80;
+        if (Math.abs(ex-50)<10 && Math.abs(ey-50)<10) return; // No spawnear encima del jugador
+
+        let id = 'e-' + Date.now() + Math.random();
+        let el = document.createElement('div');
+        el.className = 'personaje';
+        if (elegido.emoji === "🟥") el.style.filter = "drop-shadow(0 0 5px red)";
+        el.innerText = elegido.emoji;
+        el.style.left = ex + "%"; el.style.top = ey + "%";
+        document.getElementById('personajes-container').appendChild(el);
+
+        entidades[id] = {
+            id: id,
+            el: el,
+            x: ex, y: ey,
+            vx: (Math.random()-0.5) * elegido.speed,
+            vy: (Math.random()-0.5) * elegido.speed,
+            data: elegido,
+            cooldown: 0 // Para no golpear 60 veces por segundo
+        };
+    }
+
+    function generarHoyos() {
+        const c = document.getElementById('agujeros-container');
+        c.innerHTML = '';
+        // 3 Hoyos estratégicos
+        [{x:20,y:20}, {x:80,y:80}, {x:50,y:50}].forEach(pos => {
+            let h = document.createElement('div');
+            h.className = 'hoyo';
+            h.style.left = pos.x + "%"; h.style.top = pos.y + "%";
+            c.appendChild(h);
         });
     }
 
-    function spawnPersonaje() {
-        if (!juegoActivo) return;
-        let rand = Math.random(), acumulado = 0, tipoElegido = tiposPersonajes[0];
-        for (const tipo of tiposPersonajes) {
-            acumulado += tipo.prob;
-            if (rand <= acumulado) { tipoElegido = tipo; break; }
+    function crearExplosion(x, y, color) {
+        const layer = document.getElementById('fx-layer');
+        for(let i=0; i<12; i++) {
+            let p = document.createElement('div');
+            p.className = 'particula';
+            p.style.backgroundColor = color;
+            p.style.left = x + "%"; p.style.top = y + "%";
+            p.style.boxShadow = `0 0 10px ${color}`;
+            
+            let angle = Math.random() * 6.28;
+            let speed = 20 + Math.random() * 40;
+            let tx = Math.cos(angle) * speed;
+            let ty = Math.sin(angle) * speed;
+
+            p.animate([
+                { transform: 'translate(0,0) scale(1)', opacity: 1 },
+                { transform: `translate(${tx}px, ${ty}px) scale(0)`, opacity: 0 }
+            ], { duration: 600, easing: 'ease-out' });
+
+            layer.appendChild(p);
+            setTimeout(() => p.remove(), 600);
         }
-        let cX = 10 + Math.random()*80, cY = 10 + Math.random()*80;
-        if (Math.abs(cX-50)<15 && Math.abs(cY-50)<15) return;
-
-        let id = Date.now() + Math.random();
-        let div = document.createElement('div');
-        div.className = 'personaje ' + (tipoElegido.claseExtra || '');
-        div.id = 'char-' + id;
-        div.style.left = cX + "%"; div.style.top = cY + "%";
-        div.innerText = tipoElegido.emoji;
-        document.getElementById('personajes-container').appendChild(div);
-        personajesEnJuego[id] = { x: cX, y: cY, vx: (Math.random()-0.5)*tipoElegido.speed, vy: (Math.random()-0.5)*tipoElegido.speed, tipo: tipoElegido };
     }
 
-    function actualizarUI() {
-        document.getElementById('puntos').innerText = puntos;
-        document.getElementById('segundos').innerText = segundos;
-    }
-
-    function contarTiempo() {
+    function loop() {
         if (!juegoActivo) return;
-        if (segundos <= 0) finalizarJuego(true);
-        else { segundos--; actualizarUI(); setTimeout(contarTiempo, 1000); }
-    }
 
-    function gameLoop() {
-        if (!juegoActivo) return;
-        vx += incliX * 0.09; vy += incliY * 0.09;
-        vx *= 0.91; vy *= 0.91;
+        // Física Balón
+        vx += incliX * 0.08; vy += incliY * 0.08;
+        vx *= 0.92; vy *= 0.92; // Fricción
         x += vx * 0.1; y += vy * 0.1;
 
-        let velocidad = Math.sqrt(vx*vx + vy*vy);
-        rotacionAcumulada += velocidad * 6;
+        // Colisión Paredes
+        if (x<3 || x>97) { vx *= -0.8; x = x<3?3:97; AudioEngine.playTone(100, 'triangle', 0.05); }
+        if (y<3 || y>97) { vy *= -0.8; y = y<3?3:97; AudioEngine.playTone(100, 'triangle', 0.05); }
 
-        const pelota = document.getElementById('pelota');
-        const sombra = document.getElementById('sombra-pelota');
-        const tablero = document.getElementById('tablero');
+        // Render Balón
+        rotacionPelota += Math.sqrt(vx*vx + vy*vy) * 5;
+        let ball = document.getElementById('pelota');
+        ball.style.left = x + "%"; ball.style.top = y + "%";
+        ball.style.transform = `translate(-50%,-50%) rotate(${rotacionPelota}deg)`;
         
-        pelota.style.left = x + "%"; pelota.style.top = y + "%";
-        pelota.style.transform = `translate(-50%, -50%) rotate(${rotacionAcumulada}deg)`;
-        
-        // La sombra sigue al balón pero sin rotar
-        sombra.style.left = x + "%"; sombra.style.top = (y + 1) + "%"; // +1 para offset vertical
+        // Tilt Tablero
+        document.getElementById('tablero').style.transform = `rotateX(${-incliY*0.5}deg) rotateY(${incliX*0.5}deg)`;
 
-        tablero.style.transform = `rotateX(${-incliY*0.4}deg) rotateY(${incliX*0.4}deg) scale(1.02)`;
+        // Lógica Entidades
+        for (let key in entidades) {
+            let ent = entidades[key];
+            
+            // Mover Entidad
+            ent.x += ent.vx; ent.y += ent.vy;
+            if (ent.x < 5 || ent.x > 95) ent.vx *= -1;
+            if (ent.y < 5 || ent.y > 95) ent.vy *= -1;
+            
+            ent.el.style.left = ent.x + "%"; ent.el.style.top = ent.y + "%";
 
-        for (let id in personajesEnJuego) {
-            let p = personajesEnJuego[id];
-            p.x += p.vx; p.y += p.vy;
-            if (p.x<6 || p.x>94) p.vx*=-1; if (p.y<6 || p.y>94) p.vy*=-1;
-            let charDiv = document.getElementById('char-' + id);
-            if (charDiv) {
-                charDiv.style.left = p.x + "%"; charDiv.style.top = p.y + "%";
-                if (Math.sqrt(Math.pow(x-p.x,2)+Math.pow(y-p.y,2)) < 6.5) { 
-                    puntos += p.tipo.valor;
+            // Reducir cooldown de golpe
+            if (ent.cooldown > 0) ent.cooldown--;
+
+            // Colisión con Balón
+            let dx = x - ent.x; let dy = y - ent.y;
+            let dist = Math.sqrt(dx*dx + dy*dy);
+
+            if (dist < 6 && ent.cooldown <= 0) {
+                if (ent.data.tipo === 'bueno') {
+                    // COSA BUENA
+                    puntos += ent.data.valor;
+                    AudioEngine.sonidoMoneda();
+                    crearExplosion(ent.x, ent.y, '#ffd700');
+                    mostrarMensaje("+" + ent.data.valor);
+                    
+                    // Eliminar
+                    ent.el.remove();
+                    delete entidades[key];
                     actualizarUI();
-                    // DISPARAR PARTICULAS
-                    crearExplosion(p.x, p.y, p.tipo.colorFn);
-                    document.getElementById('dialogo').innerText = p.tipo.valor > 0 ? frases[Math.floor(Math.random()*3)] : "¡Auch!";
-                    charDiv.remove(); delete personajesEnJuego[id];
+
+                } else {
+                    // TARJETA ROJA (Mala)
+                    vidas--;
+                    AudioEngine.sonidoGolpe();
+                    crearExplosion(ent.x, ent.y, '#ff0000');
+                    mostrarMensaje("¡CUIDADO!");
+                    
+                    actualizarUI();
+                    
+                    if (vidas <= 0) {
+                        gameOver("¡Tarjeta Roja Expulsado!");
+                    } else {
+                        // MODIFICACION PEDIDA: Explota y se mueve rápido
+                        ent.cooldown = 60; // 1 segundo invulnerable para no morir instantáneo
+                        ent.vx *= 3; // Aumentar velocidad X
+                        ent.vy *= 3; // Aumentar velocidad Y
+                        ent.el.style.fontSize = "55px"; // Se hace más grande
+                        ent.el.classList.add('roja-furiosa'); // Añadir efecto visual
+                        
+                        // Empuje al balón al chocar
+                        vx = -vx * 2;
+                        vy = -vy * 2;
+                    }
                 }
             }
         }
 
-        document.querySelectorAll('.hoyo').forEach(hoyo => {
-            let hR = hoyo.getBoundingClientRect(), tR = tablero.getBoundingClientRect();
-            let hX = ((hR.left+hR.width/2-tR.left)/tR.width)*100;
-            let hY = ((hR.top+hR.height/2-tR.top)/tR.height)*100;
-            if (Math.sqrt(Math.pow(x-hX,2)+Math.pow(y-hY,2)) < 4.5) finalizarJuego(false);
+        // Colisión Hoyos
+        let hoyos = document.querySelectorAll('.hoyo');
+        hoyos.forEach(h => {
+            let rect = h.getBoundingClientRect();
+            let tabRect = document.getElementById('tablero').getBoundingClientRect();
+            let hx = ((rect.left + rect.width/2 - tabRect.left) / tabRect.width)*100;
+            let hy = ((rect.top + rect.height/2 - tabRect.top) / tabRect.height)*100;
+            
+            if (Math.sqrt(Math.pow(x-hx,2) + Math.pow(y-hy,2)) < 5) {
+                gameOver("Caíste al vacío");
+            }
         });
 
-        if (x<2 || x>98) { vx*=-1; x = x<2?2:98; }
-        if (y<2 || y>98) { vy*=-1; y = y<2?2:98; }
-
-        requestAnimationFrame(gameLoop);
+        requestAnimationFrame(loop);
     }
 
-    function finalizarJuego(ganaste) {
+    function actualizarUI() {
+        document.getElementById('puntos-ui').innerText = puntos;
+        let vidaStr = "";
+        for(let i=0; i<vidas; i++) vidaStr += "❤️";
+        document.getElementById('vidas-ui').innerText = vidaStr;
+    }
+
+    function mostrarMensaje(txt) {
+        let d = document.getElementById('dialogo');
+        d.innerText = txt;
+        d.style.transform = "scale(1.2)";
+        setTimeout(() => d.style.transform = "scale(1)", 200);
+    }
+
+    function contarTiempo() {
+        if (!juegoActivo) return;
+        segundos--;
+        document.getElementById('timer-ui').innerText = segundos;
+        if (segundos <= 0) gameOver("¡Tiempo Fuera!");
+        else setTimeout(contarTiempo, 1000);
+    }
+
+    function gameOver(razon) {
         juegoActivo = false;
-        document.getElementById('intro').style.display = 'flex';
-        document.querySelector('#intro h1').innerText = ganaste ? "¡TIEMPO TERMINADO!" : "¡CAÍSTE AL VACÍO!";
-        document.querySelector('#intro p').innerHTML = `Puntuación Final: <span style="color:var(--neon-oro); font-size:1.5rem">${puntos}</span><br>¿Otra partida?`;
-        document.querySelector('#intro .btn').innerText = "REINTENTAR";
+        AudioEngine.sonidoGameOver();
+        setTimeout(() => {
+            alert(razon + "\nPuntos: " + puntos);
+            document.getElementById('intro').style.display = 'flex';
+        }, 500);
     }
 </script>
 </body>
