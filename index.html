@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cazador de Personajes</title>
+    <title>Cazador de Personajes: Edición Fútbol</title>
     <style>
         :root { 
             --borde-dorado: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FFD700 100%);
-            --hielo: radial-gradient(circle at 30% 30%, #e3f2fd 0%, #90caf9 40%, #42a5f5 100%);
+            /* Cancha de hielo/futurista */
+            --hielo: radial-gradient(circle at 50% 50%, #ffffff 0%, #e3f2fd 60%, #bbdefb 100%); 
             --agujero-vortex: radial-gradient(circle, #1a0033 0%, #000000 70%);
-            --sombra-pelota: rgba(255,100,0,0.7);
             --fondo-oscuro: linear-gradient(135deg, #0a0e27 0%, #1a1a2e 50%, #16213e 100%);
         }
         body { 
@@ -17,6 +17,7 @@
             background: var(--fondo-oscuro); 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
             perspective: 1500px;
+            touch-action: none; /* Previene scroll en móviles */
         }
         
         #escenario { width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; }
@@ -24,51 +25,33 @@
         #tablero {
             width: 90vw; height: 130vw; 
             background: var(--hielo);
-            border: 22px solid transparent; 
-            border-image: var(--borde-dorado) 30;
+            /* Textura sutil para el piso */
+            background-image: 
+                linear-gradient(rgba(0,168,255,0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,168,255,0.05) 1px, transparent 1px);
+            background-size: 20px 20px;
+            border: 15px solid #fff; 
+            outline: 5px solid #000;
             border-radius: 30px; 
             position: relative;
             box-shadow: 
                 0 50px 100px rgba(0,0,0,0.9),
-                inset 0 0 80px rgba(255,255,255,0.1),
-                0 0 40px rgba(255,215,0,0.3);
+                inset 0 0 60px rgba(0,0,0,0.2);
             transform-style: preserve-3d;
             transition: transform 0.1s ease-out;
         }
 
+        /* Diseño de los hoyos (Trampas) */
         .hoyo {
             position: absolute; 
-            width: 60px; 
-            height: 60px; 
+            width: 65px; 
+            height: 65px; 
             background: var(--agujero-vortex);
             border-radius: 50%; 
-            box-shadow: 
-                inset 0 15px 30px rgba(0,0,0,0.9), 
-                0 0 25px rgba(138,43,226,0.6),
-                0 0 40px rgba(75,0,130,0.4);
+            border: 2px solid rgba(255,255,255,0.1);
+            box-shadow: inset 0 10px 20px #000;
             transform: translate(-50%, -50%);
-            animation: vortex 3s ease-in-out infinite;
-            overflow: hidden;
-        }
-        .hoyo::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 150%;
-            height: 150%;
-            background: conic-gradient(from 0deg, transparent 0%, rgba(138,43,226,0.3) 50%, transparent 100%);
-            transform: translate(-50%, -50%);
-            animation: spin 2s linear infinite;
-        }
-        @keyframes vortex { 
-            0% { transform: translate(-50%, -50%) scale(1); }
-            50% { transform: translate(-50%, -50%) scale(1.05); }
-            100% { transform: translate(-50%, -50%) scale(1); }
-        }
-        @keyframes spin {
-            from { transform: translate(-50%, -50%) rotate(0deg); }
-            to { transform: translate(-50%, -50%) rotate(360deg); }
+            z-index: 1;
         }
 
         .personaje {
@@ -78,7 +61,7 @@
             z-index: 8; 
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             pointer-events: none;
-            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
+            filter: drop-shadow(0 5px 5px rgba(0,0,0,0.3));
             animation: flotar 2s ease-in-out infinite;
         }
         @keyframes flotar {
@@ -86,49 +69,32 @@
             50% { transform: translate(-50%, -50%) translateY(-5px); }
         }
 
+        /* --- DISEÑO DEL BALÓN DE FÚTBOL REALISTA --- */
         #pelota {
-            width: 58px; 
-            height: 58px; 
+            width: 50px; 
+            height: 50px; 
             position: absolute; 
-            transform: translate(-50%, -50%); 
-            font-size: 48px;
-            display: flex; 
-            align-items: center; 
-            justify-content: center;
+            /* Fondo blanco base */
+            background-color: #fdfdfd;
+            
+            /* Patrón SVG de hexágonos para simular el balón */
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 0 L65 25 L35 25 Z' fill='black'/%3E%3Cpath d='M50 100 L65 75 L35 75 Z' fill='black'/%3E%3Cpath d='M0 50 L25 35 L25 65 Z' fill='black'/%3E%3Cpath d='M100 50 L75 35 L75 65 Z' fill='black'/%3E%3Cpath d='M50 50 L62 58 L50 70 L38 58 Z' fill='black' opacity='0.8'/%3E%3Ccircle cx='50' cy='50' r='12' fill='black'/%3E%3C/svg%3E");
+            background-size: cover;
+            
+            border-radius: 50%;
             z-index: 10; 
-            filter: drop-shadow(0 15px 12px var(--sombra-pelota))
-                    drop-shadow(0 0 20px rgba(255,150,0,0.5));
-            animation: meteoroPulso 1.5s ease-in-out infinite;
-        }
-        @keyframes meteoroPulso {
-            0%, 100% { transform: translate(-50%, -50%) scale(1); }
-            50% { transform: translate(-50%, -50%) scale(1.08); }
-        }
+            
+            /* Sombreado interno para dar efecto 3D esférico */
+            box-shadow: 
+                inset -5px -5px 15px rgba(0,0,0,0.3),
+                inset 5px 5px 15px rgba(255,255,255,0.8),
+                0 10px 15px rgba(0,0,0,0.4); /* Sombra proyectada en el piso */
 
-        #pelota::after {
-            content: ''; 
-            position: absolute; 
-            top: 50%; 
-            left: 50%;
-            width: 35px; 
-            height: 35px; 
-            background: radial-gradient(circle, rgba(255,150,50,0.4) 0%, transparent 70%);
-            border-radius: 50%; 
-            filter: blur(12px); 
-            opacity: 0;
-            animation: estela 0.8s ease-out infinite;
-            pointer-events: none;
-            z-index: -1;
-        }
-        @keyframes estela {
-            0% { 
-                transform: translate(-50%, -50%) scale(0.5); 
-                opacity: 0.9; 
-            }
-            100% { 
-                transform: translate(-50%, -50%) scale(2) translateX(-30px); 
-                opacity: 0; 
-            }
+            /* Centrado inicial */
+            transform: translate(-50%, -50%);
+            
+            /* La rotación se controlará por JS, pero añadimos will-change para rendimiento */
+            will-change: transform, left, top;
         }
 
         #ui { 
@@ -138,164 +104,162 @@
             text-align: center; 
             color: white; 
             z-index: 100; 
-            text-shadow: 0 0 10px rgba(0,0,0,0.8), 0 4px 6px rgba(0,0,0,0.6); 
+            pointer-events: none;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8); 
         }
         #puntos-ui { 
             font-size: 2rem; 
-            font-weight: bold; 
-            color: #76ff03; 
-            text-shadow: 0 0 15px rgba(118,255,3,0.6);
+            font-weight: 800; 
+            color: #ffeb3b; 
         }
         #timer-ui { 
-            font-size: 3.8rem; 
-            font-weight: bold; 
-            margin: 8px 0; 
-            color: #00e5ff; 
-            text-shadow: 0 0 20px rgba(0,229,255,0.8);
-            animation: timerPulso 1s ease-in-out infinite;
-        }
-        @keyframes timerPulso {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+            font-size: 3rem; 
+            font-weight: 900; 
+            margin: 5px 0; 
+            color: #fff; 
         }
         #dialogo { 
-            font-size: 1.3rem; 
-            background: rgba(0,0,0,0.75); 
-            padding: 12px 20px; 
-            border-radius: 15px; 
+            font-size: 1.1rem; 
+            background: rgba(0,0,0,0.6); 
+            padding: 8px 15px; 
+            border-radius: 20px; 
             display: inline-block; 
-            min-width: 250px; 
-            border: 2px solid rgba(255,215,0,0.3);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
         }
         
         .overlay {
             position: fixed; top:0; left:0; width:100%; height:100%;
-            background: linear-gradient(135deg, rgba(0,0,0,0.95) 0%, rgba(20,20,40,0.97) 100%);
+            background: rgba(0,0,0,0.92);
             display: flex; flex-direction: column;
             align-items: center; justify-content: center; z-index: 1000; color: white;
         }
         .btn { 
-            padding: 25px 60px; 
-            font-size: 1.8rem; 
-            background: var(--borde-dorado); 
+            padding: 20px 50px; 
+            font-size: 1.5rem; 
+            background: white; 
             color: #000; 
             border: none; 
             border-radius: 50px; 
             font-weight: bold; 
             cursor: pointer; 
-            box-shadow: 0 10px 30px rgba(255,215,0,0.4);
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-        .btn:active {
-            transform: scale(0.95);
-            box-shadow: 0 5px 15px rgba(255,215,0,0.6);
+            box-shadow: 0 0 20px rgba(255,255,255,0.5);
         }
     </style>
 </head>
 <body>
 
 <div id="ui">
-    <div id="puntos-ui">Puntos: <span id="puntos">0</span></div>
-    <div id="timer-ui"><span id="segundos">60</span>s</div>
-    <p id="dialogo">¡A atrapar a todos!</p>
+    <div id="puntos-ui">GOLES: <span id="puntos">0</span></div>
+    <div id="timer-ui"><span id="segundos">60</span></div>
+    <p id="dialogo">¡Mueve el celular para rodar!</p>
 </div>
 
 <div id="escenario">
     <div id="tablero">
         <div id="agujeros-container"></div>
         <div id="personajes-container"></div>
-        <div id="pelota">☄️</div>
+        <div id="pelota"></div>
     </div>
 </div>
 
 <div id="intro" class="overlay">
-    <h1 style="color:#00e5ff; font-size:3rem; text-shadow: 0 0 20px rgba(0,229,255,0.8);">¡CAZADOR DE EMOTES!</h1>
-    <p style="text-align:center; padding:0 20px; font-size:1.2rem; line-height: 1.6;">
-        Guía tu meteorito para atrapar a los emojis.<br>
-        <span style="color:#76ff03;">😀 = 10pts</span> | 
-        <span style="color:#00e5ff;">😎 = 20pts</span> | 
-        <span style="color:#ffd700;">🚀 = 50pts</span> | 
-        <span style="color:#ff1744;">👽 = -30pts</span><br>
-        <strong style="color:#ff5252;">¡Cuidado! Si caes al hoyo, pierdes todos tus puntos.</strong>
+    <h1 style="font-size:2.5rem; margin-bottom:10px;">⚽ FUTBOLITO EXTREMO</h1>
+    <p style="text-align:center; padding:0 30px; line-height:1.5;">
+        Inclina tu dispositivo para hacer <strong>RODAR EL BALÓN</strong>.<br><br>
+        😀 Aficionados (+10) <br>
+        😎 VIPs (+20) <br>
+        🏆 Copas (+50) <br>
+        🟥 Tarjeta Roja (-30) <br><br>
+        ¡No caigas en los agujeros negros!
     </p>
-    <button class="btn" onclick="iniciarJuego()">¡QUE COMIENCE LA CAZA!</button>
+    <button class="btn" onclick="iniciarJuego()">¡SAQUE INICIAL!</button>
 </div>
 
 <script>
-    let x = 50, y = 20, vx = 0, vy = 0;
+    let x = 50, y = 50, vx = 0, vy = 0;
     let incliX = 0, incliY = 0, juegoActivo = false;
     let puntos = 0, segundos = 60;
     
+    // Variable para acumular la rotación del balón
+    let rotacionAcumulada = 0;
+
     const tiposPersonajes = [
         { emoji: "😀", valor: 10, prob: 0.4, speed: 0.5 },
         { emoji: "😎", valor: 20, prob: 0.3, speed: 0.8 },
-        { emoji: "🚀", valor: 50, prob: 0.2, speed: 1.2 },
-        { emoji: "👽", valor: -30, prob: 0.1, speed: 1.0 }
+        { emoji: "🏆", valor: 50, prob: 0.1, speed: 1.2 }, // Cambiado a Copa
+        { emoji: "🟥", valor: -30, prob: 0.2, speed: 0.9 } // Cambiado a Tarjeta Roja
     ];
 
     let personajesEnJuego = {};
 
-    const frasesIntro = ["¡Bienvenidos, cazadores!", "¡Que gane el mejor!", "¿Listo para el reto?"];
-    const frasesAtrapar = ["¡Bien hecho!", "¡Puntos para la casa!", "¡Otro más a la bolsa!", "¡Excelente captura!"];
-    const frasesAlien = ["¡Oh no, un alienígena!", "¡Te robó puntos!", "¡Cuidado con esos extraterrestres!"];
-    const frasesPerder = ["¡Vaya, qué lástima! Puntos perdidos.", "¡Al hoyo! Mejor suerte la próxima.", "¡El tablero te ganó!"];
-    const frasesGanar = ["¡Increíble! ¡Eres el cazador definitivo!", "¡Puntuación récord!", "¡Victoria contundente!"];
+    const frasesPositivas = ["¡Golazo!", "¡Buena jugada!", "¡Sigue así!", "¡Crack!"];
+    const frasesNegativas = ["¡Falta!", "¡Fuera de lugar!", "¡Cuidado árbitro!"];
 
-    function hablar(listaFrases, personalizada = false) {
-        window.speechSynthesis.cancel();
-        let texto = personalizada ? listaFrases : listaFrases[Math.floor(Math.random() * listaFrases.length)];
-        let m = new SpeechSynthesisUtterance(texto);
-        m.lang = 'es-MX'; 
-        m.pitch = 1.0;
-        m.rate = 1.0;
+    function hablar(texto) {
+        // Simple visual feedback en lugar de voz para rendimiento rápido
         document.getElementById('dialogo').innerText = texto;
-        window.speechSynthesis.speak(m);
     }
 
     async function iniciarJuego() {
-        if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-            const res = await DeviceOrientationEvent.requestPermission();
-            if (res === 'granted') arrancarJuego();
+        if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+            try {
+                const res = await DeviceOrientationEvent.requestPermission();
+                if (res === 'granted') arrancarJuego();
+                else alert("Necesitas dar permiso de orientación para jugar.");
+            } catch (e) { arrancarJuego(); }
         } else { arrancarJuego(); }
     }
 
     function arrancarJuego() {
         document.getElementById('intro').style.display = 'none';
         juegoActivo = true;
-        window.addEventListener('deviceorientation', e => { incliX = e.gamma; incliY = e.beta; });
-        actualizarUI();
+        // Reiniciar posición
+        x = 50; y = 50; vx = 0; vy = 0;
+        
+        window.addEventListener('deviceorientation', manejarOrientacion);
+        
         generarAgujeros();
-        setInterval(spawnPersonaje, 2000);
+        setInterval(spawnPersonaje, 1500); // Más rápido
         contarTiempo();
-        hablar(frasesIntro);
         gameLoop();
+    }
+
+    function manejarOrientacion(e) {
+        // Ajuste para mayor sensibilidad y control
+        incliX = e.gamma || 0; 
+        incliY = e.beta || 0; 
+        
+        // Limitar inclinación para que no se "vuelva loco" al ponerlo vertical
+        if (incliX > 45) incliX = 45;
+        if (incliX < -45) incliX = -45;
+        if (incliY > 45) incliY = 45;
+        if (incliY < -45) incliY = -45;
     }
 
     function generarAgujeros() {
         const agCont = document.getElementById('agujeros-container');
         agCont.innerHTML = '';
-        const numHoyos = 3; // Reducido a solo 3 hoyos
         const posiciones = [
-            { left: 25, top: 30 },
-            { left: 75, top: 50 },
-            { left: 50, top: 75 }
+            { left: 20, top: 20 },
+            { left: 80, top: 20 },
+            { left: 20, top: 80 },
+            { left: 80, top: 80 }
         ];
-        for (let i = 0; i < numHoyos; i++) {
+        posiciones.forEach(pos => {
             let div = document.createElement('div');
             div.className = 'hoyo';
-            div.style.left = posiciones[i].left + "%";
-            div.style.top = posiciones[i].top + "%";
+            div.style.left = pos.left + "%";
+            div.style.top = pos.top + "%";
             agCont.appendChild(div);
-        }
+        });
     }
 
     function spawnPersonaje() {
         if (!juegoActivo) return;
 
-        let tipoElegido = null;
         let rand = Math.random();
         let acumulado = 0;
+        let tipoElegido = tiposPersonajes[0];
 
         for (const tipo of tiposPersonajes) {
             acumulado += tipo.prob;
@@ -304,12 +268,13 @@
                 break;
             }
         }
-        if (!tipoElegido) return;
 
         let charX = 10 + Math.random() * 80;
         let charY = 10 + Math.random() * 80;
-        let id = Date.now().toString() + Math.random();
+        // Evitar spawnear muy cerca del centro (donde inicia el jugador)
+        if (Math.abs(charX - 50) < 10 && Math.abs(charY - 50) < 10) return;
 
+        let id = Date.now() + Math.random();
         let div = document.createElement('div');
         div.className = 'personaje';
         div.id = 'char-' + id;
@@ -320,27 +285,19 @@
 
         personajesEnJuego[id] = {
             x: charX, y: charY,
-            vx: (Math.random() - 0.5) * tipoElegido.speed * 2,
-            vy: (Math.random() - 0.5) * tipoElegido.speed * 2,
+            vx: (Math.random() - 0.5) * tipoElegido.speed,
+            vy: (Math.random() - 0.5) * tipoElegido.speed,
             tipo: tipoElegido
         };
-    }
-
-    function actualizarUI() {
-        document.getElementById('puntos').innerText = puntos;
-        document.getElementById('segundos').innerText = segundos;
     }
 
     function contarTiempo() {
         if (!juegoActivo) return;
         if (segundos <= 0) {
-            juegoActivo = false;
-            hablar(frasesGanar);
-            setTimeout(() => alert(`¡Tiempo terminado! Tu puntuación final es: ${puntos}`), 1000);
-            setTimeout(() => location.reload(), 3000);
+            finalizarJuego(true);
         } else {
             segundos--;
-            actualizarUI();
+            document.getElementById('segundos').innerText = segundos;
             setTimeout(contarTiempo, 1000);
         }
     }
@@ -348,73 +305,102 @@
     function gameLoop() {
         if (!juegoActivo) return;
 
-        vx += incliX * 0.05;
-        vy += incliY * 0.05;
-        vx *= 0.95; vy *= 0.95;
-        x += vx * 0.2; y += vy * 0.2;
+        // FÍSICA DE MOVIMIENTO
+        vx += incliX * 0.08; // Sensibilidad X
+        vy += incliY * 0.08; // Sensibilidad Y
+        
+        // Fricción (simulando pasto/hielo)
+        vx *= 0.92; 
+        vy *= 0.92;
+        
+        x += vx * 0.1; 
+        y += vy * 0.1;
 
+        // CÁLCULO DE ROTACIÓN (EFECTO RODAR)
+        // La velocidad total es la hipotenusa de vx y vy
+        let velocidad = Math.sqrt(vx*vx + vy*vy);
+        // Acumulamos rotación basada en la velocidad. 
+        // El factor 5 ajusta qué tan rápido gira visualmente.
+        rotacionAcumulada += velocidad * 5;
+
+        // ACTUALIZAR DOM DEL BALÓN
         const pelota = document.getElementById('pelota');
         const tablero = document.getElementById('tablero');
+        
         pelota.style.left = x + "%";
         pelota.style.top = y + "%";
+        // Aplicamos la rotación. Nota: translate(-50%, -50%) es necesario para mantener el centro.
+        pelota.style.transform = `translate(-50%, -50%) rotate(${rotacionAcumulada}deg)`;
 
-        tablero.style.transform = `rotateX(${-incliY*0.4}deg) rotateY(${incliX*0.4}deg)`;
+        // Inclinación visual del tablero 3D
+        tablero.style.transform = `rotateX(${-incliY*0.3}deg) rotateY(${incliX*0.3}deg)`;
 
+        // COLISIONES CON PERSONAJES
         for (let id in personajesEnJuego) {
             let p = personajesEnJuego[id];
             
-            p.x += p.vx;
-            p.y += p.vy;
-
+            // Mover personajes (rebote suave)
+            p.x += p.vx; p.y += p.vy;
             if (p.x < 5 || p.x > 95) p.vx *= -1;
             if (p.y < 5 || p.y > 95) p.vy *= -1;
-
-            p.x = Math.max(5, Math.min(95, p.x));
-            p.y = Math.max(5, Math.min(95, p.y));
 
             const charDiv = document.getElementById('char-' + id);
             if (charDiv) {
                 charDiv.style.left = p.x + "%";
                 charDiv.style.top = p.y + "%";
 
+                // Distancia entre balón y personaje
                 let dist = Math.sqrt(Math.pow(x - p.x, 2) + Math.pow(y - p.y, 2));
-                if (dist < 6) {
+                
+                // Radio de colisión (Balón ~5% ancho, Personaje ~4% ancho)
+                if (dist < 6) { 
                     puntos += p.tipo.valor;
-                    if (p.tipo.valor < 0) { hablar(frasesAlien); } 
-                    else { hablar(frasesAtrapar); }
-                    actualizarUI();
+                    document.getElementById('puntos').innerText = puntos;
+                    
+                    if (p.tipo.valor > 0) hablar(frasesPositivas[Math.floor(Math.random()*frasesPositivas.length)]);
+                    else hablar(frasesNegativas[Math.floor(Math.random()*frasesNegativas.length)]);
+
                     charDiv.remove();
                     delete personajesEnJuego[id];
                 }
             }
         }
 
+        // COLISIÓN CON HOYOS
         const hoyos = document.querySelectorAll('.hoyo');
         hoyos.forEach(hoyo => {
             let hoyoRect = hoyo.getBoundingClientRect();
             let tableroRect = tablero.getBoundingClientRect();
             
-            let hoyoCenterX = ((hoyoRect.left + hoyoRect.width / 2 - tableroRect.left) / tableroRect.width) * 100;
-            let hoyoCenterY = ((hoyoRect.top + hoyoRect.height / 2 - tableroRect.top) / tableroRect.height) * 100;
+            // Convertir posición del hoyo a porcentaje relativo al tablero
+            let hoyoX = ((hoyoRect.left + hoyoRect.width/2 - tableroRect.left) / tableroRect.width) * 100;
+            let hoyoY = ((hoyoRect.top + hoyoRect.height/2 - tableroRect.top) / tableroRect.height) * 100;
 
-            let distHoyo = Math.sqrt(Math.pow(x - hoyoCenterX, 2) + Math.pow(y - hoyoCenterY, 2));
-            if (distHoyo < 5) { // Radio de colisión reducido
-                perderJuego();
+            let distHoyo = Math.sqrt(Math.pow(x - hoyoX, 2) + Math.pow(y - hoyoY, 2));
+            
+            if (distHoyo < 4) { // Si cae en el hoyo
+                finalizarJuego(false);
             }
         });
 
-        if (x < 3 || x > 97 || y < 3 || y > 97) {
-            perderJuego();
+        // LÍMITES DE CANCHA
+        if (x < 2 || x > 98 || y < 2 || y > 98) {
+            vx *= -1; vy *= -1; // Rebote en paredes en lugar de muerte instantánea
+            x = Math.max(2, Math.min(98, x));
+            y = Math.max(2, Math.min(98, y));
         }
 
         requestAnimationFrame(gameLoop);
     }
 
-    function perderJuego() {
+    function finalizarJuego(ganaste) {
         juegoActivo = false;
-        hablar(frasesPerder);
-        setTimeout(() => alert(`¡GAME OVER! Perdiste todos tus ${puntos} puntos.`), 1000);
-        setTimeout(() => location.reload(), 3000);
+        let mensaje = ganaste ? 
+            `¡TIEMPO! Puntuación final: ${puntos}` : 
+            `¡CAÍSTE! Fin del juego.`;
+            
+        alert(mensaje);
+        location.reload();
     }
 </script>
 </body>
