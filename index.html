@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Balance Challenge</title>
+    <style>
+        body { margin: 0; background: #00b894; font-family: sans-serif; overflow: hidden; color: white; text-align: center; }
+        #app { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
+        
+        /* La Charola */
+        #tray {
+            width: 300px; height: 300px; background: rgba(255,255,255,0.2);
+            border: 10px solid white; border-radius: 50%; position: relative;
+            display: flex; align-items: center; justify-content: center;
+            transition: transform 0.1s;
+        }
+
+        #item { font-size: 80px; position: absolute; transition: all 0.1s ease-out; }
+
+        .btn { background: white; color: #00b894; padding: 20px 40px; border-radius: 50px; 
+               border: none; font-size: 1.5rem; font-weight: bold; cursor: pointer; }
+        
+        #status { font-size: 1.5rem; margin-bottom: 20px; padding: 0 20px; }
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <div id="status">Sostén el celular firme y camina</div>
+    
+    <div id="tray">
+        <div id="item">🍎</div>
+    </div>
+
+    <br>
+    <button id="btnStart" class="btn" onclick="start()">¡JUGAR!</button>
+</div>
+
+<script>
+    let active = false;
+    let level = 1;
+    const items = ["🍎", "🥚", "☕", "🍷", "🎂", "🐟", "👶"];
+
+    function speak(text) {
+        const msg = new SpeechSynthesisUtterance(text);
+        msg.lang = 'es-MX';
+        window.speechSynthesis.speak(msg);
+    }
+
+    function start() {
+        // Pedir permiso para sensores (Requerido en iPhone)
+        if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+            DeviceOrientationEvent.requestPermission()
+                .then(state => {
+                    if (state === 'granted') initGame();
+                });
+        } else {
+            initGame();
+        }
+    }
+
+    function initGame() {
+        document.getElementById('btnStart').style.display = 'none';
+        active = true;
+        speak("Nivel 1. Camina con cuidado.");
+        
+        window.addEventListener('deviceorientation', (e) => {
+            if (!active) return;
+
+            // Beta (adelante/atrás) y Gamma (izq/der)
+            let tiltX = e.gamma; 
+            let tiltY = e.beta;
+
+            // Mover visualmente el objeto
+            const item = document.getElementById('item');
+            item.style.transform = `translate(${tiltX * 3}px, ${tiltY * 3}px)`;
+
+            // Lógica de "Caída" (Si se inclina más de 25 grados)
+            if (Math.abs(tiltX) > 25 || Math.abs(tiltY) > 25) {
+                gameOver();
+            }
+        });
+    }
+
+    function gameOver() {
+        active = false;
+        document.getElementById('status').innerText = "¡SE CAYÓ!";
+        speak("¡Oh no! Se ha caído el objeto. Has perdido.");
+        document.getElementById('item').style.transform = "translateY(500px)";
+        setTimeout(() => location.reload(), 3000);
+    }
+</script>
+</body>
+</html>
