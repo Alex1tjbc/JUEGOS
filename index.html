@@ -3,160 +3,153 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mesero Pro: Realismo Total</title>
+    <title>Mesero Simpson Challenge</title>
     <style>
-        :root { --madera: #5d4037; --tablero: #d7ccc8; }
-        body { 
-            margin: 0; padding: 0; overflow: hidden; 
-            background: #1a1a1a; font-family: 'Segoe UI', sans-serif; 
-            perspective: 1000px; /* Efecto 3D */
-        }
+        :root { --borde: #3d2b1f; --madera: #6d4c41; }
+        body { margin: 0; padding: 0; overflow: hidden; background: #1a1a1a; font-family: 'Comic Sans MS', sans-serif; }
         
-        #escenario {
-            width: 100vw; height: 100vh;
-            display: flex; align-items: center; justify-content: center;
-        }
+        #escenario { width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; perspective: 1000px; }
 
-        /* El Tablero Físico */
         #tablero {
-            width: 90vw; height: 120vw;
-            background: var(--tablero);
-            background-image: radial-gradient(circle, rgba(255,255,255,0.5) 1px, transparent 1px);
-            background-size: 20px 20px;
-            border: 15px solid var(--madera);
-            border-radius: 20px;
-            position: relative;
-            box-shadow: 0 50px 100px rgba(0,0,0,0.5);
-            transition: transform 0.1s ease-out;
+            width: 85vw; height: 130vw; background: var(--madera);
+            background-image: repeating-linear-gradient(rgba(0,0,0,0.05) 0px, rgba(0,0,0,0.05) 20px, rgba(0,0,0,0.1) 21px);
+            border: 20px solid var(--borde); border-radius: 20px;
+            position: relative; box-shadow: 0 40px 60px rgba(0,0,0,0.8);
         }
 
-        /* Agujeros Realistas */
         .hoyo {
-            position: absolute; width: 70px; height: 70px;
-            background: #000; border-radius: 50%;
-            box-shadow: inset 0 10px 20px rgba(0,0,0,1), 0 2px 5px rgba(255,255,255,0.2);
+            position: absolute; width: 75px; height: 75px; background: #000;
+            border-radius: 50%; box-shadow: inset 0 10px 20px #000;
             transform: translate(-50%, -50%);
         }
 
-        /* La Pelota que Rueda */
+        #raton {
+            position: absolute; font-size: 35px; transform: translate(-50%, -50%);
+            z-index: 8; transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
         #pelota {
-            width: 50px; height: 50px;
-            position: absolute; transform: translate(-50%, -50%);
-            font-size: 40px; display: flex; align-items: center; justify-content: center;
-            z-index: 10; transition: transform 0.05s linear;
+            width: 55px; height: 55px; position: absolute; 
+            transform: translate(-50%, -50%); font-size: 45px;
+            display: flex; align-items: center; justify-content: center;
+            z-index: 10; filter: drop-shadow(0 10px 5px rgba(0,0,0,0.5));
         }
 
-        #sombra {
-            position: absolute; width: 50px; height: 20px;
-            background: rgba(0,0,0,0.3); border-radius: 50%;
-            transform: translate(-50%, 15px); filter: blur(5px);
-            z-index: 5;
-        }
-
-        #ui { position: fixed; top: 20px; width: 100%; text-align: center; color: var(--madera); z-index: 100; pointer-events: none; }
-        #timer { font-size: 3.5rem; font-weight: bold; margin: 0; }
-        
+        #ui { position: fixed; top: 10px; width: 100%; text-align: center; color: #ffd700; z-index: 100; text-shadow: 2px 2px #000; }
+        #timer { font-size: 3rem; margin: 0; }
         .overlay {
             position: fixed; top:0; left:0; width:100%; height:100%;
-            background: rgba(0,0,0,0.85); display: flex; flex-direction: column;
+            background: rgba(0,0,0,0.9); display: flex; flex-direction: column;
             align-items: center; justify-content: center; z-index: 1000; color: white;
         }
-        .btn { padding: 20px 60px; font-size: 1.5rem; background: #8d6e63; color: white; border: none; border-radius: 50px; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        .btn { padding: 20px 50px; font-size: 1.5rem; background: #ffd700; color: #000; border: none; border-radius: 50px; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div id="ui">
-    <p id="lvl-nom">NIVEL 1</p>
+    <div id="vidas-ui">Vidas: ❤️</div>
     <h1 id="timer">15</h1>
+    <p id="dialogo" style="background: rgba(0,0,0,0.5); display: inline-block; padding: 5px 15px; border-radius: 10px;"></p>
 </div>
 
 <div id="escenario">
     <div id="tablero">
         <div id="agujeros"></div>
-        <div id="sombra"></div>
+        <div id="raton">🐭</div>
         <div id="pelota">⚽</div>
     </div>
 </div>
 
 <div id="intro" class="overlay">
-    <h1 style="font-size: 3rem; margin-bottom: 10px;">MESERO LOCO</h1>
-    <p style="font-size: 1.2rem; text-align: center; padding: 0 20px;">
-        Sostén el celular plano.<br>¡No dejes que ruede al hoyo!
-    </p>
-    <button class="btn" onclick="iniciar()">¡VAMOS!</button>
+    <h1 style="color:#ffd700">¡ME QUIERO VOLVER CHANGO!</h1>
+    <p>¡No dejes que la bola caiga al hoyo o no habrá rosquillas!</p>
+    <button class="btn" onclick="iniciar()">¡A LA DALAI!</button>
 </div>
 
 <script>
     let x = 50, y = 20, vx = 0, vy = 0, rot = 0;
     let incliX = 0, incliY = 0, activo = false;
-    let nivelActual = 0, segundos = 15;
+    let nivel = 0, segundos = 15, vidas = 1;
+    let ratonX = -10, ratonY = -10;
 
     const frasesPerder = [
-        "¡Me recargo en la pared, perdiste!",
-        "¡Me quiero volver chango!",
-        "¡Casi casi! Así no vas, vas... ¡Animo para la otra!",
-        "¡Qué bárbaro! Tienes manos de mantequilla."
+        "¡D'oh! ¡Me quiero volver chango!",
+        "¡Me recargo en la pared! ¡Perdí mis rosquillas!",
+        "¡Estúpido y sensual hoyo!",
+        "¡Ouh! ¡Nadie me quiere!",
+        "¡Pequeño demonio, me hiciste perder!"
     ];
 
     const frasesGanar = [
-        "¡Aquí tenemos a un ganador!",
-        "¡Vean qué bonito es ganar!",
-        "¡Eso es tener estilo, mesero de lujo!"
+        "¡A la grande le puse Cuca! ¡Ganamos!",
+        "¡Vean qué bonito es ganar! ¡Yuju!",
+        "¡Me lo merezco! ¡Soy un genio!",
+        "¡Mmm... rosquillas de la victoria!"
     ];
 
     const niveles = [
-        { obj: "⚽", nom: "ENTRENAMIENTO", t: 15, dif: 0.6, hoyos: [{x:50, y:50}] },
-        { obj: "🏀", nom: "DIFICULTAD MEDIA", t: 15, dif: 0.9, hoyos: [{x:50, y:50}] },
-        { obj: "🎱", nom: "BILLAR EXPERTO", t: 20, dif: 1.2, hoyos: [{x:25, y:25}, {x:75, y:75}] },
-        { obj: "💣", nom: "¡CUIDADO EXTREMO!", t: 25, dif: 1.5, hoyos: [{x:50, y:20}, {x:50, y:80}, {x:50, y:50}] }
+        { obj: "⚽", t: 15, dif: 0.6, hoyos: [{x:50, y:55}] },
+        { obj: "🏀", t: 20, dif: 0.8, hoyos: [{x:25, y:25}, {x:75, y:75}] },
+        { obj: "💣", t: 25, dif: 1.1, hoyos: [{x:50, y:20}, {x:50, y:80}, {x:50, y:50}] }
     ];
 
-    function hablar(lista) {
+    function hablar(lista, personalizada = false) {
         window.speechSynthesis.cancel();
-        const frase = lista[Math.floor(Math.random() * lista.length)];
-        let m = new SpeechSynthesisUtterance(frase);
-        m.lang = 'es-MX';
-        m.pitch = 1.2; // Un poco más agudo para sonar más humano
-        m.rate = 1.0;  // Velocidad normal
+        let texto = personalizada ? lista : lista[Math.floor(Math.random() * lista.length)];
+        let m = new SpeechSynthesisUtterance(texto);
+        
+        // --- CONFIGURACIÓN "HOMERO" ---
+        m.lang = 'es-MX'; 
+        m.pitch = 0.7; // Voz más grave
+        m.rate = 0.85; // Habla más despacio
+        // ------------------------------
+
         window.speechSynthesis.speak(m);
+        document.getElementById('dialogo').innerText = texto;
     }
 
     async function iniciar() {
         if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-            const permission = await DeviceOrientationEvent.requestPermission();
-            if (permission === 'granted') arrancar();
+            const res = await DeviceOrientationEvent.requestPermission();
+            if (res === 'granted') arrancar();
         } else { arrancar(); }
     }
 
     function arrancar() {
         document.getElementById('intro').style.display = 'none';
         activo = true;
-        window.addEventListener('deviceorientation', e => {
+        window.addEventListener('deviceorientation', e => { 
             incliX = e.gamma; 
-            incliY = e.beta;
+            incliY = e.beta; 
         });
         cargarNivel();
+        moverRaton(); 
+        setInterval(moverRaton, 4000);
         loop();
     }
 
+    function moverRaton() {
+        if (!activo) return;
+        ratonX = 20 + Math.random() * 60;
+        ratonY = 20 + Math.random() * 60;
+        const r = document.getElementById('raton');
+        r.style.left = ratonX + "%";
+        r.style.top = ratonY + "%";
+    }
+
     function cargarNivel() {
-        const n = niveles[nivelActual];
-        document.getElementById('lvl-nom').innerText = n.nom;
+        const n = niveles[nivel];
         document.getElementById('pelota').innerText = n.obj;
         segundos = n.t;
-        
         const hCont = document.getElementById('agujeros');
         hCont.innerHTML = '';
         n.hoyos.forEach(h => {
-            let div = document.createElement('div');
-            div.className = 'hoyo';
-            div.style.left = h.x + "%";
-            div.style.top = h.y + "%";
+            let div = document.createElement('div'); div.className = 'hoyo';
+            div.style.left = h.x + "%"; div.style.top = h.y + "%";
             hCont.appendChild(div);
         });
-        
-        hablar(["Nivel " + (nivelActual + 1) + ". " + n.nom]);
+        hablar("¡Nivel " + (nivel+1) + ". ¡Yuju!", true);
         timer();
     }
 
@@ -164,58 +157,61 @@
         if (!activo) return;
         document.getElementById('timer').innerText = segundos;
         if (segundos <= 0) {
-            nivelActual++;
-            if (nivelActual < niveles.length) cargarNivel();
-            else { activo = false; hablar(["¡Ganaste todo! Qué bonito es ganar."]); alert("¡CAMPEÓN!"); location.reload(); }
-        } else {
-            segundos--;
-            setTimeout(timer, 1000);
-        }
+            nivel++;
+            if (nivel < niveles.length) { hablar(frasesGanar); cargarNivel(); }
+            else { activo = false; hablar("¡Soy un genio! ¡Felicidades, ganaste!", true); alert("¡ERES EL GANADOR!"); location.reload(); }
+        } else { segundos--; setTimeout(timer, 1000); }
     }
 
     function loop() {
         if (!activo) return;
-
-        let d = niveles[nivelActual].dif;
-        vx += incliX * 0.05 * d;
-        vy += incliY * 0.05 * d;
-        vx *= 0.95; vy *= 0.95;
+        let d = niveles[nivel].dif;
+        vx += incliX * 0.05 * d; vy += incliY * 0.05 * d;
+        vx *= 0.94; vy *= 0.94;
         x += vx * 0.2; y += vy * 0.2;
-
-        // Rotación de la pelota para que parezca que RUEDA
         rot += (vx + vy) * 2;
 
-        // Visuales
         const p = document.getElementById('pelota');
-        const s = document.getElementById('sombra');
         const t = document.getElementById('tablero');
-
-        p.style.left = x + "%";
-        p.style.top = y + "%";
+        p.style.left = x + "%"; p.style.top = y + "%";
         p.style.transform = `translate(-50%, -50%) rotate(${rot}deg)`;
         
-        s.style.left = x + "%";
-        s.style.top = y + "%";
+        // Efecto 3D de inclinación
+        t.style.transform = `rotateX(${-incliY*0.4}deg) rotateY(${incliX*0.4}deg)`;
 
-        // Inclinación visual del tablero (3D)
-        t.style.transform = `rotateX(${-incliY*0.5}deg) rotateY(${incliX*0.5}deg)`;
+        // Colisión Ratón
+        let distRaton = Math.sqrt(Math.pow(x - ratonX, 2) + Math.pow(y - ratonY, 2));
+        if (distRaton < 6) {
+            vidas++; ratonX = -100;
+            hablar("¡Mírenme! ¡Tengo una vida extra!", true);
+            actualizarVidas();
+        }
 
-        // Colisiones con hoyos
-        niveles[nivelActual].hoyos.forEach(h => {
-            let dist = Math.sqrt(Math.pow(x - h.x, 2) + Math.pow(y - h.y, 2));
-            if (dist < 6) morir();
+        // Colisión Hoyos
+        niveles[nivel].hoyos.forEach(h => {
+            if (Math.sqrt(Math.pow(x - h.x, 2) + Math.pow(y - h.y, 2)) < 6) morir();
         });
 
-        // Colisión con bordes
+        // Colisión Bordes
         if (x < 5 || x > 95 || y < 5 || y > 95) morir();
 
         requestAnimationFrame(loop);
     }
 
+    function actualizarVidas() {
+        document.getElementById('vidas-ui').innerText = "Vidas: " + "❤️".repeat(vidas);
+    }
+
     function morir() {
-        activo = false;
-        hablar(frasesPerder);
-        setTimeout(() => location.reload(), 2000);
+        if (vidas > 1) {
+            vidas--; actualizarVidas();
+            x = 50; y = 15; vx = 0; vy = 0;
+            hablar("¡Me salvé por un pelito de rana calva!", true);
+        } else {
+            activo = false; 
+            hablar(frasesPerder);
+            setTimeout(() => location.reload(), 3000);
+        }
     }
 </script>
 </body>
