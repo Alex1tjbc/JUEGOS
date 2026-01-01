@@ -3,75 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Balance familiar</title>
+    <title>¡Mesero Loco Pro!</title>
     <style>
-        body { margin: 0; padding: 0; overflow: hidden; background: #2c3e50; font-family: sans-serif; color: white; text-align: center; }
-        #ui { position: absolute; width: 100%; top: 20px; z-index: 10; }
+        body { margin: 0; padding: 0; overflow: hidden; background: #121212; font-family: 'Arial Rounded MT Bold', sans-serif; color: white; text-align: center; }
+        #ui { position: absolute; width: 100%; top: 15px; z-index: 10; pointer-events: none; }
         
-        #charola {
-            width: 80vw; height: 80vw; background: radial-gradient(circle, #7f8c8d, #34495e);
-            border: 12px solid #ecf0f1; border-radius: 50%; position: absolute;
-            top: 50%; left: 50%; transform: translate(-50%, -50%);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.5);
+        #escenario {
+            width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center;
         }
 
-        #agujero {
-            width: 50px; height: 50px; background: #000; border: 3px solid #e74c3c;
-            border-radius: 50%; position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%); box-shadow: inset 0 0 15px #000;
+        #charola {
+            width: 85vw; height: 85vw; background: radial-gradient(circle, #555, #222);
+            border: 10px solid #ffd700; border-radius: 50%; position: relative;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8); transition: width 0.5s, height 0.5s;
+        }
+
+        .agujero {
+            width: 55px; height: 55px; background: #000; border: 3px dashed #ff4757;
+            border-radius: 50%; position: absolute; transform: translate(-50%, -50%);
+            box-shadow: inset 0 0 20px #ff4757;
         }
 
         #pelota {
             width: 45px; height: 45px; position: absolute; 
-            top: 20%; left: 50%; transform: translate(-50%, -50%);
-            font-size: 35px; display: flex; align-items: center; justify-content: center;
-            filter: drop-shadow(0 5px 5px rgba(0,0,0,0.4));
+            transform: translate(-50%, -50%); font-size: 38px;
+            display: flex; align-items: center; justify-content: center;
+            z-index: 5;
         }
 
-        .btn { padding: 15px 30px; font-size: 1.2rem; background: #27ae60; color: white; border: none; border-radius: 10px; font-weight: bold; }
-        #overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
-        #timer { font-size: 2.5rem; font-weight: bold; color: #f1c40f; }
+        .btn { padding: 20px 40px; font-size: 1.5rem; background: #ffd700; color: #000; border: none; border-radius: 15px; font-weight: bold; cursor: pointer; }
+        #overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; padding: 20px; box-sizing: border-box; }
+        #timer { font-size: 3rem; color: #2ecc71; text-shadow: 0 0 10px #2ecc71; }
     </style>
 </head>
 <body>
 
 <div id="overlay">
-    <h2>🏆 RETO DE EQUILIBRIO</h2>
-    <p>Mantén la pelota lejos del centro<br>¡Sobrevive hasta que el tiempo acabe!</p>
-    <button class="btn" onclick="activar()">¡EMPEZAR NIVEL!</button>
+    <h1 id="titulo-overlay">¿LISTO PARA EL SHOW?</h1>
+    <p id="subtitulo-overlay">Sostén recto el celular. ¡No seas un manos de mantequilla!</p>
+    <button class="btn" onclick="activar()">¡DALE!</button>
 </div>
 
 <div id="ui">
     <div id="timer"><span id="segundos">10</span>s</div>
-    <div id="lvl-txt" style="font-size: 1.2rem;">NIVEL 1</div>
+    <div id="lvl-txt" style="font-size: 1.4rem; color: #ffd700;">NIVEL 1: Novato</div>
+    <div id="status-msg" style="font-style: italic; margin-top: 5px; color: #ccc;">¡Vas bien, vas bien!</div>
 </div>
 
-<div id="charola">
-    <div id="agujero"></div>
-    <div id="pelota">🎾</div>
+<div id="escenario">
+    <div id="charola">
+        <div id="agujeros-container"></div>
+        <div id="pelota">🎾</div>
+    </div>
 </div>
 
 <script>
-    let x = 50, y = 20; // Posición inicial
-    let vx = 0, vy = 0;
-    let incliX = 0, incliY = 0;
-    let activo = false;
-    let nivel = 0;
-    let tiempo = 10;
+    let x = 50, y = 20, vx = 0, vy = 0, incliX = 0, incliY = 0;
+    let activo = false, nivel = 0, tiempo = 10;
 
-    const niveles = [
-        { art: "🎾", nom: "Tenis", dif: 0.5, t: 10 },
-        { art: "⚽", nom: "Fútbol", dif: 0.7, t: 12 },
-        { art: "🏀", nom: "Basquet", dif: 0.9, t: 15 },
-        { art: "🎱", nom: "Billar", dif: 1.2, t: 15 },
-        { art: "💣", nom: "Bomba", dif: 1.5, t: 20 }
+    const frasesPerder = [
+        "¡Me recargo en la pared, perdiste!",
+        "¡Me quiero volver chango!",
+        "¡Casi casi! Así no vas, vas... ¡Animo para la otra!",
+        "¡Qué bárbaro! Tienes manos de mantequilla.",
+        "¡Esa pelota tenía ganas de irse al hoyo!"
     ];
 
-    function hablar(t) {
+    const frasesGanar = [
+        "¡Aquí tenemos a un ganador!",
+        "¡Vean qué bonito es ganar!",
+        "¡Eso es tener estilo, mesero de lujo!",
+        "¡Pasaste de milagro, eh!",
+        "¡Tiembla el mundo, tenemos un experto!"
+    ];
+
+    const niveles = [
+        { art: "🎾", nom: "Novato", dif: 0.6, t: 10, size: 85, agujeros: [{x:50, y:50}] },
+        { art: "⚽", nom: "Aceptable", dif: 0.8, t: 12, size: 80, agujeros: [{x:50, y:50}] },
+        { art: "🏀", nom: "Casi Pro", dif: 1.0, t: 15, size: 75, agujeros: [{x:50, y:50}] },
+        { art: "🎱", nom: "El Billarista", dif: 1.3, t: 15, size: 70, agujeros: [{x:50, y:50}] },
+        { art: "💣", nom: "Peligro", dif: 1.5, t: 20, size: 65, agujeros: [{x:35, y:35}, {x:65, y:65}] },
+        { art: "🍋", nom: "Limonada", dif: 1.8, t: 20, size: 60, agujeros: [{x:50, y:30}, {x:50, y:70}] },
+        { art: "💎", nom: "Joyas Reales", dif: 2.2, t: 25, size: 55, agujeros: [{x:30, y:50}, {x:70, y:50}, {x:50, y:50}] }
+    ];
+
+    function hablar(lista) {
         window.speechSynthesis.cancel();
-        let m = new SpeechSynthesisUtterance(t);
+        const frase = lista[Math.floor(Math.random() * lista.length)];
+        let m = new SpeechSynthesisUtterance(frase);
         m.lang = 'es-MX';
         window.speechSynthesis.speak(m);
+        if(activo) document.getElementById('status-msg').innerText = frase;
     }
 
     async function activar() {
@@ -85,13 +107,32 @@
         document.getElementById('overlay').style.display = 'none';
         activo = true;
         window.addEventListener('deviceorientation', (e) => {
-            // Suavizado de entrada
             incliX = e.gamma; 
             incliY = e.beta;
         });
-        hablar("¡Mucha suerte!");
+        actualizarNivelVisual();
         correrTiempo();
         update();
+    }
+
+    function actualizarNivelVisual() {
+        const n = niveles[nivel];
+        const char = document.getElementById('charola');
+        const agCont = document.getElementById('agujeros-container');
+        
+        char.style.width = n.size + "vw";
+        char.style.height = n.size + "vw";
+        document.getElementById('pelota').innerText = n.art;
+        document.getElementById('lvl-txt').innerText = `NIVEL ${nivel+1}: ${n.nom}`;
+        
+        agCont.innerHTML = '';
+        n.agujeros.forEach(pos => {
+            let div = document.createElement('div');
+            div.className = 'agujero';
+            div.style.left = pos.x + "%";
+            div.style.top = pos.y + "%";
+            agCont.appendChild(div);
+        });
     }
 
     function correrTiempo() {
@@ -101,23 +142,24 @@
         } else {
             document.getElementById('segundos').innerText = tiempo;
             tiempo--;
+            if (tiempo % 4 === 0) document.getElementById('status-msg').innerText = "¡Sigue, no te detengas!";
             setTimeout(correrTiempo, 1000);
         }
     }
 
     function pasarNivel() {
+        activo = false;
         nivel++;
         if (nivel < niveles.length) {
-            tiempo = niveles[nivel].t;
-            document.getElementById('lvl-txt').innerText = `NIVEL ${nivel+1}: ${niveles[nivel].nom}`;
-            document.getElementById('pelota').innerText = niveles[nivel].art;
-            x = 50; y = 20; vx = 0; vy = 0;
-            hablar("¡Nivel superado! Siguiente reto.");
+            hablar(frasesGanar);
+            document.getElementById('titulo-overlay').innerText = "¡NIVEL SUPERADO!";
+            document.getElementById('subtitulo-overlay').innerText = "Prepárate para lo que viene...";
             document.getElementById('overlay').style.display = 'flex';
+            tiempo = niveles[nivel].t;
+            x = 50; y = 15; vx = 0; vy = 0;
         } else {
-            activo = false;
-            hablar("¡Increíble, ganaste!");
-            alert("¡CAMPEÓN!");
+            hablar(["¡ERES EL REY DE LOS MESEROS!"]);
+            alert("¡GANASTE TODO!");
             location.reload();
         }
     }
@@ -125,14 +167,11 @@
     function update() {
         if (!activo) return;
 
-        // FÍSICA SUAVIZADA
         let d = niveles[nivel].dif;
-        vx += incliX * 0.03 * d; // Fuerza reducida
-        vy += incliY * 0.03 * d;
-
-        vx *= 0.92; // Mucha más fricción (se frena más fácil)
-        vy *= 0.92;
-
+        vx += incliX * 0.04 * d;
+        vy += incliY * 0.04 * d;
+        vx *= 0.94; 
+        vy *= 0.94;
         x += vx;
         y += vy;
 
@@ -140,22 +179,34 @@
         p.style.left = x + "%";
         p.style.top = y + "%";
 
-        let dx = x - 50;
-        let dy = y - 50;
-        let dist = Math.sqrt(dx*dx + dy*dy);
+        let dx = x - 50, dy = y - 50;
+        let distCentro = Math.sqrt(dx*dx + dy*dy);
 
-        // CONDICIÓN DE PERDER (Márgenes más generosos)
-        if (dist < 7) perder("¡Caíste al centro!");
-        if (dist > 45) perder("¡Te saliste!");
+        // Colisión con agujeros
+        niveles[nivel].agujeros.forEach(h => {
+            let hdx = x - h.x, hdy = y - h.y;
+            if(Math.sqrt(hdx*hdx + hdy*hdy) < 7) perder();
+        });
+
+        // Colisión con bordes (Rebote realista)
+        if (distCentro > 44) {
+             vx *= -0.8; // Rebota hacia adentro
+             vy *= -0.8;
+             x += vx * 2;
+             y += vy * 2;
+             if(distCentro > 48) perder(); // Si se sale demasiado, muere
+        }
 
         if (activo) requestAnimationFrame(update);
     }
 
-    function perder(razon) {
+    function perder() {
         activo = false;
-        hablar(razon);
-        alert(razon + "\nInténtalo de nuevo.");
-        location.reload();
+        hablar(frasesPerder);
+        setTimeout(() => {
+            alert("¡GAME OVER!");
+            location.reload();
+        }, 1500);
     }
 </script>
 </body>
