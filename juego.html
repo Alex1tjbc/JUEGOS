@@ -2,349 +2,300 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>El Magnate</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;800&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rally del Panadero: De la Semilla al Pastel</title>
     <style>
         :root {
-            --primary: #f1c40f; /* Dorado */
-            --danger: #e74c3c;
-            --success: #2ecc71;
-            --dark: #1a1a1a;
-            --card-bg: #2c2c2c;
+            --primary: #FF9800;
+            --success: #4CAF50;
+            --locked: #9E9E9E;
+            --bg: #FFF3E0;
         }
-
         body {
-            font-family: 'Poppins', sans-serif;
-            background-color: var(--dark);
-            color: white;
-            text-align: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
             margin: 0;
-            height: 100vh;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* --- PANTALLA 1: SELECCIÓN --- */
-        #screen-select {
             padding: 20px;
-            overflow-y: auto;
+            text-align: center;
+        }
+        h1 { color: #E65100; margin-bottom: 10px; }
+        .progress-container {
+            width: 100%;
+            background-color: #ddd;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            height: 20px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background-color: var(--success);
+            transition: width 0.5s ease;
+        }
+        
+        /* Grid de Tarjetas */
+        .game-board {
             display: flex;
             flex-direction: column;
             gap: 15px;
+            max-width: 600px;
+            margin: 0 auto;
         }
 
         .card {
-            background: var(--card-bg);
+            background: white;
             border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             overflow: hidden;
-            position: relative;
-            cursor: pointer;
-            transition: transform 0.2s;
             border: 2px solid transparent;
-        }
-
-        .card:active { transform: scale(0.98); }
-        .card img { width: 100%; height: 120px; object-fit: cover; opacity: 0.7; }
-        .card-info { padding: 15px; position: absolute; bottom: 0; width: 100%; background: linear-gradient(transparent, black); text-align: left; }
-        .card h3 { margin: 0; font-size: 1.5rem; color: var(--primary); }
-        .card p { margin: 0; font-size: 0.9rem; color: #ddd; }
-
-        /* --- PANTALLA 2: JUEGO --- */
-        #screen-game {
-            flex: 1;
-            display: none; /* Oculto al inicio */
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 20px;
-            background-size: cover;
-            background-position: center;
+            opacity: 0.6;
+            transform: scale(0.98);
+            transition: all 0.3s ease;
+            pointer-events: none; /* Bloqueado por defecto */
             position: relative;
         }
 
-        /* Oscurecer fondo de juego */
-        #screen-game::before {
-            content: ''; position: absolute; top:0; left:0; right:0; bottom:0;
-            background: rgba(0,0,0,0.85); z-index: 0;
-        }
-        
-        .game-content { position: relative; z-index: 1; display: flex; flex-direction: column; height: 100%; }
-
-        .target-display { text-align: right; font-size: 0.9rem; color: #aaa; margin-bottom: 10px; }
-        
-        .money-display { 
-            font-size: 3.5rem; 
-            font-weight: 800; 
-            color: var(--primary);
-            text-shadow: 0 0 20px rgba(241, 196, 15, 0.3);
-            margin: 10px 0;
+        .card.active {
+            opacity: 1;
+            transform: scale(1);
+            border-color: var(--primary);
+            pointer-events: all;
+            box-shadow: 0 8px 15px rgba(255, 152, 0, 0.3);
         }
 
-        .progress-container {
-            width: 100%; height: 20px; background: #444; border-radius: 10px; overflow: hidden; margin-bottom: 20px;
-        }
-        .progress-bar {
-            height: 100%; width: 0%; background: var(--success); transition: width 0.3s ease;
-            box-shadow: 0 0 10px var(--success);
+        .card.completed {
+            opacity: 1;
+            border-color: var(--success);
+            background-color: #E8F5E9;
         }
 
-        .event-log {
-            flex: 1;
+        .card-header {
+            height: 100px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.2rem;
-            color: #ff9;
-            font-style: italic;
-            min-height: 60px;
-        }
-
-        .risk-badge {
-            background: rgba(255,0,0,0.2);
-            padding: 5px 15px;
-            border-radius: 20px;
-            display: inline-block;
-            border: 1px solid var(--danger);
-            color: var(--danger);
-            font-weight: bold;
-        }
-
-        /* Botón Principal */
-        #btn-action {
-            width: 100%;
-            padding: 25px;
-            font-size: 1.5rem;
-            font-weight: 800;
-            border: none;
-            border-radius: 50px;
-            background: linear-gradient(45deg, #f39c12, #d35400);
+            font-size: 3em;
             color: white;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
-            cursor: pointer;
-            margin-bottom: 20px;
-            transition: all 0.2s;
+            position: relative;
         }
-        #btn-action:active { transform: scale(0.95); }
 
-        /* Estado: Ganador/Perdedor */
-        #screen-result {
+        /* Estilos visuales para cada etapa (Simulando gráficos con CSS) */
+        .stage-1 .card-header { background: linear-gradient(135deg, #795548, #5D4037); } /* Tierra */
+        .stage-2 .card-header { background: linear-gradient(135deg, #2196F3, #03A9F4); } /* Agua */
+        .stage-3 .card-header { background: linear-gradient(135deg, #FFC107, #FF9800); } /* Trigo */
+        .stage-4 .card-header { background: linear-gradient(135deg, #F5F5F5, #BDBDBD); color: #333; } /* Harina */
+        .stage-5 .card-header { background: linear-gradient(135deg, #E91E63, #F48FB1); } /* Pastel */
+
+        .card-body {
+            padding: 15px;
+        }
+
+        .card-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .card-mission {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .btn-action {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 1em;
+            cursor: pointer;
+            width: 100%;
+        }
+        
+        .btn-action:hover { background-color: #EF6C00; }
+        
+        .completed .btn-action {
+            background-color: var(--success);
+            cursor: default;
+        }
+
+        .locked-icon {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 1.5em;
+        }
+        
+        /* Modal de Victoria */
+        #victoryModal {
             display: none;
-            flex: 1;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
             justify-content: center;
             align-items: center;
-            flex-direction: column;
+            z-index: 100;
+        }
+        .modal-content {
+            background: white;
             padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            animation: popIn 0.5s ease;
         }
-        .result-title { font-size: 3rem; margin-bottom: 10px; }
-        .btn-restart { padding: 15px 30px; background: transparent; border: 2px solid white; color: white; border-radius: 30px; font-size: 1.2rem; margin-top: 30px;}
-
-        /* Animaciones */
-        .shake { animation: shake 0.5s; }
-        @keyframes shake {
-            0% { transform: translate(1px, 1px) rotate(0deg); }
-            10% { transform: translate(-1px, -2px) rotate(-1deg); }
-            20% { transform: translate(-3px, 0px) rotate(1deg); }
-            30% { transform: translate(3px, 2px) rotate(0deg); }
-            40% { transform: translate(1px, -1px) rotate(1deg); }
-            50% { transform: translate(-1px, 2px) rotate(-1deg); }
-            60% { transform: translate(-3px, 1px) rotate(0deg); }
-            70% { transform: translate(3px, 1px) rotate(-1deg); }
-            80% { transform: translate(-1px, -1px) rotate(1deg); }
-            90% { transform: translate(1px, 2px) rotate(0deg); }
-            100% { transform: translate(1px, -2px) rotate(-1deg); }
-        }
+        @keyframes popIn { from {transform: scale(0);} to {transform: scale(1);} }
 
     </style>
 </head>
 <body>
 
-    <div id="screen-select">
-        <h2>¿Cuál es tu sueño?</h2>
-        <p style="color:#aaa; margin-top:-10px;">Elige sabiamente. Sueños grandes traen riesgos grandes.</p>
-        
-        <div class="card" onclick="iniciarJuego('viaje')">
-            <img src="https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=600&q=80" alt="París">
-            <div class="card-info">
-                <h3>Viaje a Europa</h3>
-                <p>Meta: $10,000 | Riesgo: Bajo</p>
-            </div>
-        </div>
-
-        <div class="card" onclick="iniciarJuego('auto')">
-            <img src="https://images.unsplash.com/photo-1503376763036-066120622c74?auto=format&fit=crop&w=600&q=80" alt="Auto">
-            <div class="card-info">
-                <h3>Auto Deportivo</h3>
-                <p>Meta: $50,000 | Riesgo: Medio</p>
-            </div>
-        </div>
-
-        <div class="card" onclick="iniciarJuego('casa')">
-            <img src="https://images.unsplash.com/photo-1600596542815-2250651d2116?auto=format&fit=crop&w=600&q=80" alt="Casa">
-            <div class="card-info">
-                <h3>Mansión de Lujo</h3>
-                <p>Meta: $250,000 | Riesgo: Alto</p>
-            </div>
-        </div>
-
-        <div class="card" onclick="iniciarJuego('empresa')">
-            <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=600&q=80" alt="Edificio">
-            <div class="card-info">
-                <h3>Imperio Global</h3>
-                <p>Meta: $1,000,000 | Riesgo: Extremo</p>
-            </div>
-        </div>
+    <h1>🍞 Rally: Del Campo a la Mesa 🎂</h1>
+    <p>¡Completa los retos físicos para desbloquear las tarjetas!</p>
+    
+    <div class="progress-container">
+        <div class="progress-bar" id="progressBar"></div>
     </div>
 
-    <div id="screen-game">
-        <div class="game-content">
-            <div class="target-display">META: <span id="target-amount">$0</span></div>
-            
-            <div style="flex:1; display:flex; flex-direction:column; justify-content:center;">
-                <p class="risk-badge">RIESGO ACTUAL: <span id="risk-val">0</span>%</p>
-                <div class="money-display" id="current-money">$1,000</div>
-                <div class="progress-container">
-                    <div class="progress-bar" id="progress-bar"></div>
+    <div class="game-board">
+        <div class="card stage-1 active" id="card1">
+            <div class="card-header">
+                🌱
+            </div>
+            <div class="card-body">
+                <div class="card-title">1. LA SIEMBRA</div>
+                <div class="card-mission">
+                    <strong>Reto Físico:</strong> Puntería.<br>
+                    Encesta 3 "semillas" en el cartón de huevos.
                 </div>
-                <div class="event-log" id="event-log">Toca el botón para invertir...</div>
+                <button class="btn-action" onclick="completeStage(1)">¡Ya sembré las semillas!</button>
             </div>
+        </div>
 
-            <button id="btn-action" onclick="jugarTurno()">💵 INVERTIR</button>
+        <div class="card stage-2" id="card2">
+            <div class="card-header">
+                💧
+                <span class="locked-icon">🔒</span>
+            </div>
+            <div class="card-body">
+                <div class="card-title">2. EL RIEGO</div>
+                <div class="card-mission">
+                    <strong>Reto Físico:</strong> Velocidad.<br>
+                    Llena la cubeta transportando agua con la esponja.
+                </div>
+                <button class="btn-action" onclick="completeStage(2)">Bloqueado</button>
+            </div>
+        </div>
+
+        <div class="card stage-3" id="card3">
+            <div class="card-header">
+                🌾
+                <span class="locked-icon">🔒</span>
+            </div>
+            <div class="card-body">
+                <div class="card-title">3. LA COSECHA</div>
+                <div class="card-mission">
+                    <strong>Reto Físico:</strong> Precisión.<br>
+                    Derriba todas las botellas (trigo) con la pelota.
+                </div>
+                <button class="btn-action" onclick="completeStage(3)">Bloqueado</button>
+            </div>
+        </div>
+
+        <div class="card stage-4" id="card4">
+            <div class="card-header">
+                🥡
+                <span class="locked-icon">🔒</span>
+            </div>
+            <div class="card-body">
+                <div class="card-title">4. EL MOLINO</div>
+                <div class="card-mission">
+                    <strong>Reto Físico:</strong> Fuerza.<br>
+                    ¡Revienta los globos sentándote en ellos hasta hallar el papel!
+                </div>
+                <button class="btn-action" onclick="completeStage(4)">Bloqueado</button>
+            </div>
+        </div>
+
+        <div class="card stage-5" id="card5">
+            <div class="card-header">
+                🎂
+                <span class="locked-icon">🔒</span>
+            </div>
+            <div class="card-body">
+                <div class="card-title">5. EL PASTEL</div>
+                <div class="card-mission">
+                    <strong>Reto Físico:</strong> Equilibrio.<br>
+                    Arma la torre de vasos y platos sin que se caiga.
+                </div>
+                <button class="btn-action" onclick="completeStage(5)">Bloqueado</button>
+            </div>
         </div>
     </div>
 
-    <div id="screen-result">
-        <div style="font-size: 5rem;" id="res-icon"></div>
-        <h1 class="result-title" id="res-title"></h1>
-        <p id="res-desc" style="font-size: 1.2rem; opacity: 0.8;"></p>
-        <button class="btn-restart" onclick="location.reload()">Intentar de nuevo</button>
+    <div id="victoryModal">
+        <div class="modal-content">
+            <h2 style="font-size: 3em;">🏆 ¡FELICIDADES! 🏆</h2>
+            <p>Has completado el ciclo del panadero.</p>
+            <p style="font-size: 5em;">🎂</p>
+            <button class="btn-action" onclick="location.reload()">Jugar de Nuevo</button>
+        </div>
     </div>
 
     <script>
-        // Configuración de los Objetivos
-        const OBJETIVOS = {
-            'viaje': { nombre: 'Viaje a Europa', meta: 10000, img: 'url(https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=1080&q=80)', baseRisk: 4 },
-            'auto': { nombre: 'Auto Deportivo', meta: 50000, img: 'url(https://images.unsplash.com/photo-1503376763036-066120622c74?auto=format&fit=crop&w=1080&q=80)', baseRisk: 6 },
-            'casa': { nombre: 'Mansión', meta: 250000, img: 'url(https://images.unsplash.com/photo-1600596542815-2250651d2116?auto=format&fit=crop&w=1080&q=80)', baseRisk: 8 },
-            'empresa': { nombre: 'Imperio', meta: 1000000, img: 'url(https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1080&q=80)', baseRisk: 10 }
-        };
+        let currentStage = 1;
+        const totalStages = 5;
 
-        // Frases de bancarrota (Obstáculos)
-        const CAUSAS_MUERTE = [
-            "¡Hacienda congeló tus cuentas!",
-            "¡Tu socio huyó con el dinero!",
-            "¡El mercado de valores colapsó!",
-            "¡Invertiste en una estafa piramidal!",
-            "¡Demanda millonaria de tu ex!",
-            "¡Crisis económica global!"
-        ];
+        function completeStage(stageNum) {
+            // Solo permitir completar si es la etapa actual
+            if (stageNum !== currentStage) return;
 
-        // Frases de éxito parcial
-        const EVENTOS_POSITIVOS = [
-            "¡Acciones subieron!", "¡Buen negocio!", "¡Ganancia rápida!", "¡Suerte!", "¡Dividendo cobrado!"
-        ];
+            const card = document.getElementById(`card${stageNum}`);
+            const btn = card.querySelector('.btn-action');
 
-        let estado = {
-            dinero: 1000,
-            meta: 0,
-            riesgo: 0,
-            seleccion: null,
-            turno: 0
-        };
-
-        function iniciarJuego(tipo) {
-            estado.seleccion = OBJETIVOS[tipo];
-            estado.meta = estado.seleccion.meta;
-            estado.riesgo = 0;
-            estado.dinero = 1000;
-            estado.turno = 0;
-
-            // UI Switch
-            document.getElementById('screen-select').style.display = 'none';
-            document.getElementById('screen-game').style.display = 'flex';
-            document.getElementById('screen-game').style.backgroundImage = estado.seleccion.img;
-            document.getElementById('target-amount').innerText = "$" + estado.meta.toLocaleString();
+            // Marcar visualmente como completado
+            card.classList.remove('active');
+            card.classList.add('completed');
+            btn.innerText = "✅ Completado";
             
-            actualizarUI();
-        }
+            // Actualizar barra de progreso
+            const progress = (stageNum / totalStages) * 100;
+            document.getElementById('progressBar').style.width = `${progress}%`;
 
-        function jugarTurno() {
-            // Verificar si el botón es de COMPRAR (Victoria)
-            if (estado.dinero >= estado.meta) {
-                finalizar(true);
-                return;
-            }
-
-            // Aumentar Turno y Riesgo
-            estado.turno++;
-            // El riesgo sube más rápido en niveles difíciles
-            let incrementoRiesgo = estado.seleccion.baseRisk + (Math.random() * 2); 
-            estado.riesgo += incrementoRiesgo;
-            if (estado.riesgo > 90) estado.riesgo = 90; // Tope máximo 90%
-
-            // Calcular Probabilidad de Choque
-            let suerte = Math.random() * 100;
-
-            if (suerte < estado.riesgo) {
-                // PERDIÓ
-                finalizar(false);
+            // Lógica de victoria o siguiente nivel
+            if (stageNum < totalStages) {
+                currentStage++;
+                unlockStage(currentStage);
             } else {
-                // GANÓ DINERO
-                // Multiplicador aleatorio entre 1.3x y 2.0x
-                let mult = 1.3 + Math.random();
-                estado.dinero = Math.floor(estado.dinero * mult);
-                
-                // Mensaje aleatorio
-                let msj = EVENTOS_POSITIVOS[Math.floor(Math.random() * EVENTOS_POSITIVOS.length)];
-                document.getElementById('event-log').innerText = msj;
-                
-                actualizarUI();
+                showVictory();
             }
         }
 
-        function actualizarUI() {
-            document.getElementById('current-money').innerText = "$" + estado.dinero.toLocaleString();
-            document.getElementById('risk-val').innerText = Math.floor(estado.riesgo);
+        function unlockStage(stageNum) {
+            const nextCard = document.getElementById(`card${stageNum}`);
+            const btn = nextCard.querySelector('.btn-action');
+            const lockIcon = nextCard.querySelector('.locked-icon');
+
+            nextCard.classList.add('active');
+            if(lockIcon) lockIcon.style.display = 'none';
             
-            // Barra de progreso
-            let porcentaje = (estado.dinero / estado.meta) * 100;
-            if (porcentaje > 100) porcentaje = 100;
-            document.getElementById('progress-bar').style.width = porcentaje + "%";
-
-            // Cambiar Botón si alcanzó la meta
-            const btn = document.getElementById('btn-action');
-            if (estado.dinero >= estado.meta) {
-                btn.innerText = "¡COMPRAR AHORA!";
-                btn.style.background = "#2ecc71"; // Verde
-                btn.classList.add('shake'); // Temblar de emoción
-                document.getElementById('event-log').innerText = "¡TIENES EL DINERO! ¿Te arriesgas más o compras?";
-            } else {
-                btn.innerText = "💵 INVERTIR";
-                btn.style.background = "linear-gradient(45deg, #f39c12, #d35400)";
-                btn.classList.remove('shake');
-            }
+            // Cambiar texto del botón según la etapa
+            const btnTexts = {
+                2: "¡Ya llené la cubeta!",
+                3: "¡Trigo cosechado!",
+                4: "¡Encontré la harina!",
+                5: "¡Pastel terminado!"
+            };
+            btn.innerText = btnTexts[stageNum];
         }
 
-        function finalizar(ganador) {
-            document.getElementById('screen-game').style.display = 'none';
-            const resScreen = document.getElementById('screen-result');
-            resScreen.style.display = 'flex';
-
-            if (ganador) {
-                resScreen.style.backgroundColor = "#27ae60";
-                document.getElementById('res-icon').innerText = "🏆";
-                document.getElementById('res-title').innerText = "¡COMPRADO!";
-                document.getElementById('res-desc').innerText = "Eres dueño de: " + estado.seleccion.nombre + ". Muestra tu pantalla a los demás.";
-            } else {
-                resScreen.style.backgroundColor = "#c0392b";
-                if(navigator.vibrate) navigator.vibrate(500);
-                
-                let causa = CAUSAS_MUERTE[Math.floor(Math.random() * CAUSAS_MUERTE.length)];
-                
-                document.getElementById('res-icon').innerText = "💸";
-                document.getElementById('res-title').innerText = "BANCARROTA";
-                document.getElementById('res-desc').innerText = causa;
-            }
+        function showVictory() {
+            setTimeout(() => {
+                document.getElementById('victoryModal').style.display = 'flex';
+                // Efecto de confeti simple (simulado)
+            }, 500);
         }
     </script>
 </body>
