@@ -2,301 +2,479 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rally del Panadero: De la Semilla al Pastel</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Rally Panadero Digital</title>
     <style>
-        :root {
-            --primary: #FF9800;
-            --success: #4CAF50;
-            --locked: #9E9E9E;
-            --bg: #FFF3E0;
-        }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg);
             margin: 0;
-            padding: 20px;
+            padding: 0;
+            background-color: #2c3e50;
+            font-family: 'Arial Rounded MT Bold', 'Arial', sans-serif;
+            color: white;
             text-align: center;
+            overflow: hidden; /* Evita el scroll */
+            touch-action: none;
         }
-        h1 { color: #E65100; margin-bottom: 10px; }
-        .progress-container {
-            width: 100%;
-            background-color: #ddd;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            height: 20px;
-            overflow: hidden;
-        }
-        .progress-bar {
-            height: 100%;
-            width: 0%;
-            background-color: var(--success);
-            transition: width 0.5s ease;
-        }
-        
-        /* Grid de Tarjetas */
-        .game-board {
+
+        /* PANTALLAS */
+        .screen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
             display: flex;
             flex-direction: column;
-            gap: 15px;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .card {
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            overflow: hidden;
-            border: 2px solid transparent;
-            opacity: 0.6;
-            transform: scale(0.98);
-            transition: all 0.3s ease;
-            pointer-events: none; /* Bloqueado por defecto */
-            position: relative;
-        }
-
-        .card.active {
-            opacity: 1;
-            transform: scale(1);
-            border-color: var(--primary);
-            pointer-events: all;
-            box-shadow: 0 8px 15px rgba(255, 152, 0, 0.3);
-        }
-
-        .card.completed {
-            opacity: 1;
-            border-color: var(--success);
-            background-color: #E8F5E9;
-        }
-
-        .card-header {
-            height: 100px;
-            display: flex;
-            align-items: center;
             justify-content: center;
-            font-size: 3em;
-            color: white;
-            position: relative;
+            align-items: center;
+            background: linear-gradient(135deg, #2c3e50, #000);
+            z-index: 10;
+            transition: opacity 0.5s;
         }
+        .hidden { display: none !important; }
 
-        /* Estilos visuales para cada etapa (Simulando gráficos con CSS) */
-        .stage-1 .card-header { background: linear-gradient(135deg, #795548, #5D4037); } /* Tierra */
-        .stage-2 .card-header { background: linear-gradient(135deg, #2196F3, #03A9F4); } /* Agua */
-        .stage-3 .card-header { background: linear-gradient(135deg, #FFC107, #FF9800); } /* Trigo */
-        .stage-4 .card-header { background: linear-gradient(135deg, #F5F5F5, #BDBDBD); color: #333; } /* Harina */
-        .stage-5 .card-header { background: linear-gradient(135deg, #E91E63, #F48FB1); } /* Pastel */
-
-        .card-body {
-            padding: 15px;
-        }
-
-        .card-title {
-            font-size: 1.2em;
-            font-weight: bold;
-            margin-bottom: 5px;
-            color: #333;
-        }
-
-        .card-mission {
-            font-size: 0.9em;
-            color: #666;
-            margin-bottom: 15px;
-        }
-
-        .btn-action {
-            background-color: var(--primary);
-            color: white;
+        /* BOTONES UI */
+        .btn {
+            padding: 15px 40px;
+            font-size: 24px;
             border: none;
-            padding: 10px 20px;
-            border-radius: 20px;
-            font-size: 1em;
+            border-radius: 50px;
+            background: #f1c40f;
+            color: #2c3e50;
             cursor: pointer;
-            width: 100%;
+            box-shadow: 0 5px 0 #b7950b;
+            margin-top: 20px;
+            font-weight: bold;
         }
-        
-        .btn-action:hover { background-color: #EF6C00; }
-        
-        .completed .btn-action {
-            background-color: var(--success);
-            cursor: default;
+        .btn:active { transform: translateY(5px); box-shadow: none; }
+
+        /* ZONA DE JUEGO */
+        #game-canvas {
+            width: 95%;
+            height: 60vh;
+            background: rgba(255,255,255,0.1);
+            border: 4px solid #fff;
+            border-radius: 15px;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 20px;
         }
 
-        .locked-icon {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            font-size: 1.5em;
+        /* --- ESTILOS ESPECÍFICOS DE LOS JUEGOS --- */
+
+        /* JUEGO 1: SIEMBRA (Mira en movimiento) */
+        #hook {
+            width: 4px; height: 50px; background: white;
+            position: absolute; top: 0; left: 50%;
         }
-        
-        /* Modal de Victoria */
-        #victoryModal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8);
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
+        #seed {
+            font-size: 40px; position: absolute; top: 50px; left: 50%;
+            transform: translateX(-50%);
         }
-        .modal-content {
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            text-align: center;
-            animation: popIn 0.5s ease;
+        #hole {
+            width: 60px; height: 20px; background: #5d4037;
+            border-radius: 50%;
+            position: absolute; bottom: 10px; left: 0; /* Se mueve con JS */
+            border: 2px solid #8d6e63;
         }
-        @keyframes popIn { from {transform: scale(0);} to {transform: scale(1);} }
+
+        /* JUEGO 2: RIEGO (Barra de carga) */
+        #tank-border {
+            width: 60px; height: 80%; border: 4px solid white;
+            border-radius: 10px; position: relative; overflow: hidden;
+            background: #333;
+        }
+        #water {
+            width: 100%; height: 0%; background: #3498db;
+            position: absolute; bottom: 0; transition: height 0.1s;
+        }
+        #tap-btn {
+            width: 100px; height: 100px; border-radius: 50%;
+            background: #e74c3c; border: 4px solid #c0392b;
+            color: white; font-size: 20px; font-weight: bold;
+            margin-top: 20px; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; user-select: none;
+        }
+        #tap-btn:active { transform: scale(0.9); }
+
+        /* JUEGO 3: COSECHA (Clicks rápidos) */
+        .wheat-target {
+            font-size: 50px; position: absolute; cursor: pointer;
+            animation: pop 0.3s ease-out;
+        }
+        @keyframes pop { from {transform: scale(0);} to {transform: scale(1);} }
+
+        /* JUEGO 4: MOLINO (Ruleta) */
+        #mill-wheel {
+            width: 200px; height: 200px; border-radius: 50%;
+            background: conic-gradient(#e74c3c 0deg 300deg, #2ecc71 300deg 360deg);
+            position: relative; margin: auto; top: 20%;
+            transform: rotate(0deg); /* JS lo gira */
+        }
+        #mill-pointer {
+            width: 0; height: 0; 
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 20px solid white;
+            position: absolute; top: 10%; left: 50%; transform: translateX(-50%);
+            z-index: 5;
+        }
+
+        /* JUEGO 5: PASTEL (Arrastrar/Orden - Simplificado a Clicks) */
+        .ingredient {
+            display: inline-block; font-size: 50px; margin: 10px;
+            padding: 10px; background: rgba(255,255,255,0.2);
+            border-radius: 10px; cursor: pointer;
+        }
+
+        /* TEXTOS */
+        h2 { color: #f39c12; text-shadow: 2px 2px #000; font-size: 1.5rem; margin: 10px;}
+        .instruction { font-size: 1rem; color: #bdc3c7; margin-bottom: 5px; }
+        .score { font-size: 1.2rem; color: #2ecc71; font-weight: bold; }
 
     </style>
 </head>
 <body>
 
-    <h1>🍞 Rally: Del Campo a la Mesa 🎂</h1>
-    <p>¡Completa los retos físicos para desbloquear las tarjetas!</p>
-    
-    <div class="progress-container">
-        <div class="progress-bar" id="progressBar"></div>
+    <div id="screen-start" class="screen">
+        <h1 style="font-size: 3rem; margin:0;">🍞</h1>
+        <h1>MASTER PANADERO</h1>
+        <p>5 Mini-Juegos de Habilidad</p>
+        <button class="btn" onclick="startGame()">JUGAR AHORA</button>
     </div>
 
-    <div class="game-board">
-        <div class="card stage-1 active" id="card1">
-            <div class="card-header">
-                🌱
-            </div>
-            <div class="card-body">
-                <div class="card-title">1. LA SIEMBRA</div>
-                <div class="card-mission">
-                    <strong>Reto Físico:</strong> Puntería.<br>
-                    Encesta 3 "semillas" en el cartón de huevos.
-                </div>
-                <button class="btn-action" onclick="completeStage(1)">¡Ya sembré las semillas!</button>
-            </div>
-        </div>
+    <div id="screen-game" class="screen hidden">
+        <h2 id="level-title">Nivel 1</h2>
+        <p class="instruction" id="level-instr">Instrucción</p>
+        <p class="score" id="level-score">0/0</p>
 
-        <div class="card stage-2" id="card2">
-            <div class="card-header">
-                💧
-                <span class="locked-icon">🔒</span>
+        <div id="game-canvas">
             </div>
-            <div class="card-body">
-                <div class="card-title">2. EL RIEGO</div>
-                <div class="card-mission">
-                    <strong>Reto Físico:</strong> Velocidad.<br>
-                    Llena la cubeta transportando agua con la esponja.
-                </div>
-                <button class="btn-action" onclick="completeStage(2)">Bloqueado</button>
-            </div>
-        </div>
 
-        <div class="card stage-3" id="card3">
-            <div class="card-header">
-                🌾
-                <span class="locked-icon">🔒</span>
-            </div>
-            <div class="card-body">
-                <div class="card-title">3. LA COSECHA</div>
-                <div class="card-mission">
-                    <strong>Reto Físico:</strong> Precisión.<br>
-                    Derriba todas las botellas (trigo) con la pelota.
-                </div>
-                <button class="btn-action" onclick="completeStage(3)">Bloqueado</button>
-            </div>
-        </div>
-
-        <div class="card stage-4" id="card4">
-            <div class="card-header">
-                🥡
-                <span class="locked-icon">🔒</span>
-            </div>
-            <div class="card-body">
-                <div class="card-title">4. EL MOLINO</div>
-                <div class="card-mission">
-                    <strong>Reto Físico:</strong> Fuerza.<br>
-                    ¡Revienta los globos sentándote en ellos hasta hallar el papel!
-                </div>
-                <button class="btn-action" onclick="completeStage(4)">Bloqueado</button>
-            </div>
-        </div>
-
-        <div class="card stage-5" id="card5">
-            <div class="card-header">
-                🎂
-                <span class="locked-icon">🔒</span>
-            </div>
-            <div class="card-body">
-                <div class="card-title">5. EL PASTEL</div>
-                <div class="card-mission">
-                    <strong>Reto Físico:</strong> Equilibrio.<br>
-                    Arma la torre de vasos y platos sin que se caiga.
-                </div>
-                <button class="btn-action" onclick="completeStage(5)">Bloqueado</button>
-            </div>
-        </div>
+        <button id="action-btn" class="btn hidden">ACCIÓN</button>
     </div>
 
-    <div id="victoryModal">
-        <div class="modal-content">
-            <h2 style="font-size: 3em;">🏆 ¡FELICIDADES! 🏆</h2>
-            <p>Has completado el ciclo del panadero.</p>
-            <p style="font-size: 5em;">🎂</p>
-            <button class="btn-action" onclick="location.reload()">Jugar de Nuevo</button>
-        </div>
+    <div id="screen-win" class="screen hidden">
+        <h1 style="font-size: 4rem;">⭐</h1>
+        <h2>¡NIVEL SUPERADO!</h2>
+        <button class="btn" onclick="nextLevel()">SIGUIENTE</button>
+    </div>
+
+    <div id="screen-final" class="screen hidden">
+        <h1 style="font-size: 5rem;">🎂</h1>
+        <h1>¡ERES EL MAESTRO!</h1>
+        <p>Pastel Terminado</p>
+        <button class="btn" onclick="location.reload()">JUGAR OTRA VEZ</button>
     </div>
 
     <script>
-        let currentStage = 1;
-        const totalStages = 5;
+        // VARIABLES GLOBALES
+        let currentLevel = 1;
+        let score = 0;
+        let targetScore = 0;
+        let gameLoop; // Intervalo principal
+        let gameState = {}; // Estado del mini-juego actual
+        
+        const canvas = document.getElementById('game-canvas');
+        const actionBtn = document.getElementById('action-btn');
 
-        function completeStage(stageNum) {
-            // Solo permitir completar si es la etapa actual
-            if (stageNum !== currentStage) return;
+        // SONIDOS SIMULADOS (Visuales)
+        function flashScreen(color) {
+            canvas.style.backgroundColor = color;
+            setTimeout(() => canvas.style.backgroundColor = "rgba(255,255,255,0.1)", 100);
+        }
 
-            const card = document.getElementById(`card${stageNum}`);
-            const btn = card.querySelector('.btn-action');
+        function startGame() {
+            document.getElementById('screen-start').classList.add('hidden');
+            loadLevel(1);
+        }
 
-            // Marcar visualmente como completado
-            card.classList.remove('active');
-            card.classList.add('completed');
-            btn.innerText = "✅ Completado";
-            
-            // Actualizar barra de progreso
-            const progress = (stageNum / totalStages) * 100;
-            document.getElementById('progressBar').style.width = `${progress}%`;
+        function levelComplete() {
+            clearInterval(gameLoop);
+            document.getElementById('screen-game').classList.add('hidden');
+            document.getElementById('screen-win').classList.remove('hidden');
+        }
 
-            // Lógica de victoria o siguiente nivel
-            if (stageNum < totalStages) {
-                currentStage++;
-                unlockStage(currentStage);
+        function nextLevel() {
+            currentLevel++;
+            document.getElementById('screen-win').classList.add('hidden');
+            if (currentLevel > 5) {
+                document.getElementById('screen-final').classList.remove('hidden');
             } else {
-                showVictory();
+                loadLevel(currentLevel);
             }
         }
 
-        function unlockStage(stageNum) {
-            const nextCard = document.getElementById(`card${stageNum}`);
-            const btn = nextCard.querySelector('.btn-action');
-            const lockIcon = nextCard.querySelector('.locked-icon');
+        function loadLevel(lvl) {
+            document.getElementById('screen-game').classList.remove('hidden');
+            canvas.innerHTML = ''; // Limpiar canvas
+            actionBtn.classList.add('hidden');
+            score = 0;
 
-            nextCard.classList.add('active');
-            if(lockIcon) lockIcon.style.display = 'none';
+            if (lvl === 1) setupLevel1();
+            if (lvl === 2) setupLevel2();
+            if (lvl === 3) setupLevel3();
+            if (lvl === 4) setupLevel4();
+            if (lvl === 5) setupLevel5();
+        }
+
+        // ==========================================
+        // NIVEL 1: LA SIEMBRA (TIMING / PUNTERÍA)
+        // ==========================================
+        function setupLevel1() {
+            document.getElementById('level-title').innerText = "1. LA SIEMBRA";
+            document.getElementById('level-instr').innerText = "Toca la pantalla cuando la semilla esté sobre el agujero.";
+            targetScore = 3;
+            updateScoreUI();
+
+            // Elementos
+            canvas.innerHTML = `
+                <div id="hook"><div id="seed">🌰</div></div>
+                <div id="hole"></div>
+                <div style="position:absolute; bottom:0; width:100%; height:50px; background:#4e342e;"></div>
+            `;
+
+            // Lógica
+            gameState = { holeX: 50, dir: 1, speed: 1.5 }; // El agujero se mueve
             
-            // Cambiar texto del botón según la etapa
-            const btnTexts = {
-                2: "¡Ya llené la cubeta!",
-                3: "¡Trigo cosechado!",
-                4: "¡Encontré la harina!",
-                5: "¡Pastel terminado!"
-            };
-            btn.innerText = btnTexts[stageNum];
+            // Evento Click en todo el canvas
+            canvas.onclick = dropSeed;
+
+            gameLoop = setInterval(() => {
+                const hole = document.getElementById('hole');
+                gameState.holeX += gameState.speed * gameState.dir;
+                
+                // Rebotar paredes (0 a 90%)
+                if(gameState.holeX > 85 || gameState.holeX < 0) gameState.dir *= -1;
+                
+                hole.style.left = gameState.holeX + '%';
+            }, 16);
         }
 
-        function showVictory() {
-            setTimeout(() => {
-                document.getElementById('victoryModal').style.display = 'flex';
-                // Efecto de confeti simple (simulado)
-            }, 500);
+        function dropSeed() {
+            // El gancho está fijo al 50%. El agujero se mueve.
+            // Si el agujero está cerca del 50% (centro), ganamos.
+            // El centro del agujero (width 60px) en % aprox.
+            
+            // Simplificado: obtener posición real
+            const holeRect = document.getElementById('hole').getBoundingClientRect();
+            const canvasRect = canvas.getBoundingClientRect();
+            const holeCenter = holeRect.left + (holeRect.width/2);
+            const canvasCenter = canvasRect.left + (canvasRect.width/2);
+
+            const diff = Math.abs(holeCenter - canvasCenter);
+
+            if (diff < 40) { // Tolerancia de acierto
+                score++;
+                flashScreen("#2ecc71"); // Verde
+                updateScoreUI();
+                gameState.speed += 1; // Más difícil
+                if (score >= targetScore) {
+                    canvas.onclick = null;
+                    levelComplete();
+                }
+            } else {
+                flashScreen("#e74c3c"); // Rojo
+            }
         }
+
+        // ==========================================
+        // NIVEL 2: EL RIEGO (VELOCIDAD / TAPPING)
+        // ==========================================
+        function setupLevel2() {
+            document.getElementById('level-title').innerText = "2. EL RIEGO";
+            document.getElementById('level-instr').innerText = "¡Presiona el botón ROJO muy rápido para llenar el tanque!";
+            updateScoreUI(true); // Ocultar score numérico
+
+            canvas.innerHTML = `
+                <div style="display:flex; flex-direction:column; align-items:center; height:100%; justify-content:center;">
+                    <div id="tank-border"><div id="water"></div></div>
+                    <div id="tap-btn" onmousedown="tapWater()" ontouchstart="tapWater()">AGUA</div>
+                </div>
+            `;
+            
+            canvas.onclick = null; // Quitar evento anterior
+            gameState.waterLevel = 0;
+
+            gameLoop = setInterval(() => {
+                if(gameState.waterLevel > 0) gameState.waterLevel -= 0.8; // Se vacía rápido
+                updateWater();
+            }, 50);
+        }
+
+        function tapWater() {
+            gameState.waterLevel += 6; // Sube al tocar
+            if(gameState.waterLevel >= 100) {
+                gameState.waterLevel = 100;
+                levelComplete();
+            }
+            updateWater();
+        }
+
+        function updateWater() {
+            const w = document.getElementById('water');
+            if(w) w.style.height = gameState.waterLevel + '%';
+        }
+
+        // ==========================================
+        // NIVEL 3: COSECHA (REFLEJOS)
+        // ==========================================
+        function setupLevel3() {
+            document.getElementById('level-title').innerText = "3. LA COSECHA";
+            document.getElementById('level-instr').innerText = "Toca el trigo antes de que desaparezca.";
+            targetScore = 8;
+            updateScoreUI();
+            
+            canvas.onclick = null;
+
+            // Spawner
+            gameLoop = setInterval(spawnWheat, 800);
+        }
+
+        function spawnWheat() {
+            const wheat = document.createElement('div');
+            wheat.innerText = "🌾";
+            wheat.className = "wheat-target";
+            
+            // Posición Random
+            const x = Math.random() * 80 + 10;
+            const y = Math.random() * 80 + 10;
+            wheat.style.left = x + '%';
+            wheat.style.top = y + '%';
+
+            wheat.onmousedown = function() {
+                score++;
+                updateScoreUI();
+                this.remove();
+                if(score >= targetScore) levelComplete();
+            };
+            
+            // Touch support
+            wheat.ontouchstart = wheat.onmousedown;
+
+            canvas.appendChild(wheat);
+
+            // Desaparece en 1.2 segundos
+            setTimeout(() => {
+                if(wheat.parentNode) wheat.remove();
+            }, 1200);
+        }
+
+        // ==========================================
+        // NIVEL 4: MOLINO (PRECISIÓN / RULETA)
+        // ==========================================
+        function setupLevel4() {
+            document.getElementById('level-title').innerText = "4. EL MOLINO";
+            document.getElementById('level-instr').innerText = "Detén la ruleta en la zona VERDE.";
+            updateScoreUI(true);
+
+            canvas.innerHTML = `
+                <div id="mill-pointer"></div>
+                <div id="mill-wheel"></div>
+            `;
+            
+            actionBtn.innerText = "¡PARAR!";
+            actionBtn.classList.remove('hidden');
+            actionBtn.onclick = stopMill;
+
+            gameState.angle = 0;
+            gameState.spinning = true;
+
+            gameLoop = setInterval(() => {
+                if(gameState.spinning) {
+                    gameState.angle = (gameState.angle + 10) % 360;
+                    document.getElementById('mill-wheel').style.transform = `rotate(${gameState.angle}deg)`;
+                }
+            }, 20);
+        }
+
+        function stopMill() {
+            if(!gameState.spinning) return;
+            gameState.spinning = false;
+
+            // La zona verde en el CSS gradient es de 300 a 360 grados.
+            // El puntero está fijo arriba.
+            // Como el div gira, debemos calcular qué parte está "arriba".
+            // Matemáticas simples: Si el angulo de rotación pone la zona verde arriba.
+            // 360 - angulo debe estar entre 300 y 360.
+            
+            // Ajuste visual: Zona verde es pequeña. Vamos a dar margen.
+            // Si el angulo está entre 0 y 60 (porque 360-300=60) aproximadamente.
+            
+            // Lógica simplificada de prueba y error visual:
+            // Conic gradient verde empieza en 300deg.
+            // El puntero está en Top (270deg trigonométrico o 0deg CSS standard de las 12).
+            // Si rota X grados, la parte que toca el puntero cambia.
+            
+            // Vamos a hacerlo fácil: Si el ángulo es > 280 (zona final del giro) o < 20 (inicio).
+            // Aceptamos rango amplio para diversión.
+            
+            if (gameState.angle > 280 || gameState.angle < 20) {
+                 setTimeout(levelComplete, 500);
+            } else {
+                flashScreen("#e74c3c");
+                setTimeout(() => {
+                    gameState.spinning = true; // Intentar de nuevo
+                }, 1000);
+            }
+        }
+
+        // ==========================================
+        // NIVEL 5: PASTEL (ORDEN LÓGICO)
+        // ==========================================
+        function setupLevel5() {
+            document.getElementById('level-title').innerText = "5. EL PASTEL";
+            document.getElementById('level-instr').innerText = "Toca los ingredientes en orden: Harina > Huevo > Leche > Fuego.";
+            updateScoreUI(true);
+
+            // Ingredientes
+            const ings = [
+                {id: 'flour', char: '🥡'},
+                {id: 'egg', char: '🥚'},
+                {id: 'milk', char: '🥛'},
+                {id: 'fire', char: '🔥'}
+            ];
+            // Revolver
+            ings.sort(() => Math.random() - 0.5);
+
+            let html = '<div style="margin-top:50px;">';
+            ings.forEach(i => {
+                html += `<div class="ingredient" onclick="checkIng('${i.id}')">${i.char}</div>`;
+            });
+            html += '<div id="cake-result" style="font-size:60px; margin-top:30px;">🥣</div></div>';
+            
+            canvas.innerHTML = html;
+            gameState.step = 0; 
+            gameState.order = ['flour', 'egg', 'milk', 'fire'];
+        }
+
+        function checkIng(id) {
+            const expected = gameState.order[gameState.step];
+            const display = document.getElementById('cake-result');
+
+            if(id === expected) {
+                gameState.step++;
+                if(gameState.step === 1) display.innerText = "🥡 Harina...";
+                if(gameState.step === 2) display.innerText = "🥣 Masa...";
+                if(gameState.step === 3) display.innerText = "🥛 Crema...";
+                if(gameState.step === 4) {
+                    display.innerText = "🎂 LISTO";
+                    setTimeout(levelComplete, 1000);
+                }
+            } else {
+                display.innerText = "❌ MAL";
+                flashScreen("#e74c3c");
+                gameState.step = 0; // Reiniciar
+            }
+        }
+
+        // UTILS
+        function updateScoreUI(hide = false) {
+            const el = document.getElementById('level-score');
+            if(hide) el.classList.add('hidden');
+            else {
+                el.classList.remove('hidden');
+                el.innerText = `${score} / ${targetScore}`;
+            }
+        }
+
     </script>
 </body>
 </html>
